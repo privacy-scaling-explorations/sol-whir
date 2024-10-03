@@ -1,0 +1,10 @@
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@solady-test/=lib/lib-keccak/lib/solady/test/
+@solady/=lib/lib-keccak/lib/solady/src/
+ds-test/=lib/lib-keccak/lib/forge-std/lib/ds-test/src/
+erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
+forge-std/=lib/forge-std/src/
+lib-keccak/=lib/lib-keccak/contracts/
+openzeppelin-contracts/=lib/openzeppelin-contracts/
+solady/=lib/lib-keccak/lib/solady/
+solidity-bn254/=lib/solidity-bn254/src/
