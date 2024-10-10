@@ -46,6 +46,7 @@ contract CoeffsTest is Test, TestUtils {
     }
 
     // @notice test values from whir repo
+    // custom test, with larger folding point
     function test_folding_2() public {
         uint256[] memory coeffs = new uint256[](8);
         coeffs[0] = uint256(22);
@@ -58,27 +59,29 @@ contract CoeffsTest is Test, TestUtils {
         coeffs[7] = 0;
 
         uint256[] memory alpha = new uint256[](1);
-        uint256[] memory beta = new uint256[](1);
+        uint256[] memory beta_gamma = new uint256[](2);
         alpha[0] = uint256(4);
-        beta[0] = uint256(42);
+        beta_gamma[0] = uint256(42);
+        beta_gamma[1] = uint256(24);
 
-        BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
+        BN254.ScalarField[] memory point = new BN254.ScalarField[](3);
         point[0] = BN254.ScalarField.wrap(alpha[0]);
-        point[1] = BN254.ScalarField.wrap(beta[0]);
+        point[1] = BN254.ScalarField.wrap(beta_gamma[0]);
+        point[2] = BN254.ScalarField.wrap(beta_gamma[1]);
 
         CoefficientList memory coeffsList = Coeffs.newCoefficientList(Utils.arrayToScalarField(coeffs));
-        MultilinearPoint memory foldingRandomness = MultilinearPoint(Utils.arrayToScalarField(beta));
+        MultilinearPoint memory foldingRandomness = MultilinearPoint(Utils.arrayToScalarField(beta_gamma));
         CoefficientList memory folded = Coeffs.fold(coeffsList, foldingRandomness);
-
-        assertEqUintScalarField(182, folded.coeffs[0]);
-        assertEqUintScalarField(0, folded.coeffs[1]);
 
         BN254.ScalarField eval = Coeffs.evalMultivariate(coeffsList.coeffs, point);
         BN254.ScalarField evalFolded = Coeffs.evalMultivariate(folded.coeffs, Utils.arrayToScalarField(alpha));
-
         assertEqScalarField(eval, evalFolded);
+        // matched against whir repo
+        assertEqUintScalarField(710, evalFolded);
     }
 
+    // @notice test values were matched against the whir repo
+    // ideally, we would like to do this using ffi (see TODO)
     function test_evalMultivariate() public {
         uint256[10] memory expectedRes;
         expectedRes = [

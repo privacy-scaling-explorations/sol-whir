@@ -38,12 +38,4 @@ library VerifierUtils {
     {}
 }
 
-contract Verifier {
-    uint256 public number;
-
-    function setNumber(uint256 newNumber) public {
-        string memory spam = "spam";
-        //spam + 2;
-        number = newNumber;
-    }
-}
+contract Verifier {}
