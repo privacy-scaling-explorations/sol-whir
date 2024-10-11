@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import {Test, console} from "forge-std/Test.sol";
-import {Coeffs, CoefficientList} from "../src/poly_utils/Coeffs.sol";
-import {MultilinearPoint} from "../src/poly_utils/PolyUtils.sol";
 import {BN254} from "solidity-bn254/BN254.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import "../src/utils/Utils.sol";
-import {Utils as TestUtils} from "./utils/Utils.t.sol";
 
-// TODO: call arkworks with ffi instead of harcoding
-contract CoeffsTest is Test, TestUtils {
+import "../../src/utils/Utils.sol";
+import {Coeffs, CoefficientList} from "../../src/poly_utils/Coeffs.sol";
+import {MultilinearPoint} from "../../src/poly_utils/PolyUtils.sol";
+import {WhirBaseTest} from "../WhirBaseTest.t.sol";
+
+contract CoeffsTest is WhirBaseTest {
     uint256 MAX_ARR_SIZE = 10;
 
     function setUp() public {}
@@ -36,6 +35,7 @@ contract CoeffsTest is Test, TestUtils {
         MultilinearPoint memory foldingRandomness = MultilinearPoint(Utils.arrayToScalarField(beta));
         CoefficientList memory folded = Coeffs.fold(coeffsList, foldingRandomness);
 
+        // matched against whir repo
         assertEqUintScalarField(182, folded.coeffs[0]);
         assertEqUintScalarField(0, folded.coeffs[1]);
 
