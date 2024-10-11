@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {BN254} from "solidity-bn254/BN254.sol";
-import {MultilinearPoint} from "../poly_utils/PolyUtils.sol";
+import {MultilinearPoint, PolyUtils} from "../poly_utils/PolyUtils.sol";
 import {Utils} from "../utils/Utils.sol";
 
 // @notice polynomials are in F^{<3}[X_1, \dots, X_k]
@@ -50,5 +50,12 @@ library Sumcheck {
         public
         pure
         returns (BN254.ScalarField)
-    {}
+    {
+        uint256 numEvaluationPoints = 3 ** poly.nVariables;
+        BN254.ScalarField evaluation = BN254.ScalarField.wrap(0);
+        for (uint256 i = 0; i < numEvaluationPoints; i++) {
+            evaluation = BN254.add(evaluation, BN254.mul(poly.evaluations[i], PolyUtils.eqPoly3(point, i)));
+        }
+        return evaluation;
+    }
 }
