@@ -34,8 +34,19 @@ struct ParsedProof {
 
 library VerifierUtils {
     function computeFoldsHelped(ParsedRound[] memory parsedRounds, BN254.ScalarField[][] memory finalRandomnessAnswers)
-        public
+        external
     {}
+
+    function expandRandomness(BN254.ScalarField base, uint256 len) external pure returns (BN254.ScalarField[] memory) {
+        BN254.ScalarField[] memory res = new BN254.ScalarField[](len);
+        BN254.ScalarField acc = BN254.ScalarField.wrap(1);
+        for (uint256 i = 0; i < len; i++) {
+            res[i] = acc;
+            acc = BN254.mul(acc, base);
+        }
+
+        return res;
+    }
 }
 
 contract Verifier {}
