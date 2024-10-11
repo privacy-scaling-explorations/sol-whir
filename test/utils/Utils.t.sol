@@ -5,7 +5,7 @@ import {Utils} from "../../src/utils/Utils.sol";
 import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 
 contract UtilsTest is WhirBaseTest {
-    function test_baseDecomposition() public pure {
+    function test_baseDecomposition() external pure {
         uint8[] memory res1 = Utils.baseDecomposition(100, 3, 5);
         uint8[] memory expectedRes1 = new uint8[](5);
         expectedRes1[0] = 1;

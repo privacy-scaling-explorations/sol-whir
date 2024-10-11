@@ -12,10 +12,8 @@ import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 contract CoeffsTest is WhirBaseTest {
     uint256 MAX_ARR_SIZE = 10;
 
-    function setUp() public {}
-
     // @notice test values from whir repo
-    function test_folding() public {
+    function test_folding() external {
         uint256[] memory coeffs = new uint256[](4);
         coeffs[0] = uint256(22);
         coeffs[1] = 5;
@@ -46,8 +44,9 @@ contract CoeffsTest is WhirBaseTest {
     }
 
     // @notice test values from whir repo
-    // custom test, with larger folding point
-    function test_folding_2() public {
+    // custom test, with a larger folding point, crossed check with whir implementation
+    // would be better to do this with ffi; see TODO
+    function test_folding_2() external {
         uint256[] memory coeffs = new uint256[](8);
         coeffs[0] = uint256(22);
         coeffs[1] = 5;
@@ -82,7 +81,7 @@ contract CoeffsTest is WhirBaseTest {
 
     // @notice test values were matched against the whir repo
     // ideally, we would like to do this using ffi (see TODO)
-    function test_evalMultivariate() public {
+    function test_evalMultivariate() external {
         uint256[10] memory expectedRes;
         expectedRes = [
             uint256(0),

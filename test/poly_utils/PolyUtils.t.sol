@@ -8,7 +8,8 @@ import {MultilinearPoint, PolyUtils} from "../../src/poly_utils/PolyUtils.sol";
 import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 
 contract PolyUtilsTest is WhirBaseTest {
-    function test_equality3() public pure {
+    // @notice test values from whir repo
+    function test_equality3() external {
         BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
         point[0] = BN254.ScalarField.wrap(0);
         point[1] = BN254.ScalarField.wrap(0);

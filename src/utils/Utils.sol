@@ -44,4 +44,12 @@ library Utils {
 
         return result;
     }
+
+    function arrayUint8ToScalarField(uint8[] memory values) public pure returns (BN254.ScalarField[] memory) {
+        BN254.ScalarField[] memory scalars = new BN254.ScalarField[](values.length);
+        for (uint256 i = 0; i < values.length; i++) {
+            scalars[i] = BN254.ScalarField.wrap(values[i]);
+        }
+        return scalars;
+    }
 }
