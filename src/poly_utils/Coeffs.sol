@@ -12,8 +12,49 @@ struct CoefficientList {
 }
 
 library Coeffs {
+    // naive univariate polynomial evaluation
+    function _evaluateUnivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField point)
+        internal
+        pure
+        returns (BN254.ScalarField)
+    {
+        BN254.ScalarField eval = BN254.ScalarField.wrap(0);
+        BN254.ScalarField x = BN254.ScalarField.wrap(1);
+        for (uint256 i = 0; i < coeffs.length; i++) {
+            eval = BN254.add(eval, BN254.mul(x, coeffs[i]));
+            x = BN254.mul(x, point);
+        }
+        return eval;
+    }
+
+    function evaluateUnivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField point)
+        internal
+        pure
+        returns (BN254.ScalarField)
+    {
+        if (coeffs.length == 0) {
+            return BN254.ScalarField.wrap(0);
+        } else {
+            return _evaluateUnivariate(coeffs, point);
+        }
+    }
+
+    // @notice interprets coeffs as coeffs of a univariate polynomial
+    // and returns the evaluation of this univariate polynomial at each of those points
+    function evaluateAtUnivariate(CoefficientList memory coeffs, BN254.ScalarField[] memory points)
+        external
+        pure
+        returns (BN254.ScalarField[] memory)
+    {
+        BN254.ScalarField[] memory evaluations = new BN254.ScalarField[](points.length);
+        for (uint256 i = 0; i < points.length; i++) {
+            evaluations[i] = evaluateUnivariate(coeffs.coeffs, points[i]);
+        }
+        return evaluations;
+    }
+
     // @notice Initiates a new coefficient list struct
-    function newCoefficientList(BN254.ScalarField[] memory coeffs) public pure returns (CoefficientList memory) {
+    function newCoefficientList(BN254.ScalarField[] memory coeffs) external pure returns (CoefficientList memory) {
         uint256 nVariables = Math.log2(coeffs.length);
         return CoefficientList(coeffs, nVariables);
     }
@@ -24,16 +65,17 @@ library Coeffs {
         pure
         returns (BN254.ScalarField[] memory)
     {
+        require(end > start && end <= array.length, "Invalid start or end index");
         BN254.ScalarField[] memory chunk = new BN254.ScalarField[](end - start);
         for (uint256 i = start; i < end; i++) {
-            chunk[i - (start)] = array[i];
+            chunk[i - start] = array[i];
         }
         return chunk;
     }
 
     // @notice computes folding
     function fold(CoefficientList memory coeffs, MultilinearPoint memory foldingRandomness)
-        public
+        external
         returns (CoefficientList memory)
     {
         uint256 chunkSize = 1 << foldingRandomness.point.length;
@@ -49,7 +91,7 @@ library Coeffs {
         return CoefficientList({coeffs: newCoeffs, numVariables: coeffs.numVariables - foldingRandomness.point.length});
     }
 
-    //@notice eval functions are internal, they are used only in the context of the evaluation of a multivariate polynomial
+    // @notice eval functions are internal, they are used only in the context of the evaluation of a multivariate polynomial
     function eval0(BN254.ScalarField[] memory coeffs) internal pure returns (BN254.ScalarField) {
         return coeffs[0];
     }
@@ -113,9 +155,7 @@ library Coeffs {
     }
 
     // @notice Follows the implementation from https://github.com/WizardOfMenlo/whir/blob/cb3de2c886804b0cac022738479b931916bd57c1/src/poly_utils/coeffs.rs#L123
-    // @notice We slightly depart from the corresponding signature, mainly for avoiding passing down the `CoefficientList` struct
-    // TODO: should we change the signature of this thing to stick to the canonical repo?
-    // @return The evaluation of a multivariate polynomial
+    // We slightly depart from the corresponding signature, mainly for avoiding passing down the `CoefficientList` struct
     function evalMultivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
         public
         returns (BN254.ScalarField)

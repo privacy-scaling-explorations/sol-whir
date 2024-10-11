@@ -12,6 +12,24 @@ import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 contract CoeffsTest is WhirBaseTest {
     uint256 MAX_ARR_SIZE = 10;
 
+    // @notice custom test and values, checked against whir repo
+    function test_evaluateAtUnivariate() external {
+        uint256[] memory coeffs = new uint256[](4);
+        uint256[] memory points = new uint256[](3);
+        coeffs[0] = 42;
+        coeffs[1] = 42;
+        coeffs[2] = 24;
+        coeffs[3] = 24;
+        points[0] = 42;
+        points[1] = 24;
+        points[2] = 424;
+        CoefficientList memory coeffsList = Coeffs.newCoefficientList(Utils.arrayToScalarField(coeffs));
+        BN254.ScalarField[] memory res = Coeffs.evaluateAtUnivariate(coeffsList, Utils.arrayToScalarField(points));
+        assertEqScalarField(res[0], BN254.ScalarField.wrap(1822254));
+        assertEqScalarField(res[1], BN254.ScalarField.wrap(346650));
+        assertEqScalarField(res[2], BN254.ScalarField.wrap(1833733050));
+    }
+
     // @notice test values from whir repo
     function test_folding() external {
         uint256[] memory coeffs = new uint256[](4);
