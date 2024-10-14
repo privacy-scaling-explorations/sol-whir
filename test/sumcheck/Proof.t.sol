@@ -10,7 +10,7 @@ import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 
 contract ProofTest is WhirBaseTest {
     // @notice test values from whir repo
-    function test_evaluation() external {
+    function test_evaluation() external pure {
         uint256 numVariables = 2;
         uint256 numEvaluationPoints = 3 ** numVariables;
         BN254.ScalarField[] memory evaluations = new BN254.ScalarField[](numEvaluationPoints);

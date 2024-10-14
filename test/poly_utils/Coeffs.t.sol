@@ -13,7 +13,7 @@ contract CoeffsTest is WhirBaseTest {
     uint256 MAX_ARR_SIZE = 10;
 
     // @notice custom test and values, checked against whir repo
-    function test_evaluateAtUnivariate() external {
+    function test_evaluateAtUnivariate() external pure {
         uint256[] memory coeffs = new uint256[](4);
         uint256[] memory points = new uint256[](3);
         coeffs[0] = 42;

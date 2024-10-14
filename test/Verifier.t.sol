@@ -8,7 +8,7 @@ import {VerifierUtils} from "../src/Verifier.sol";
 
 contract VerifierTest is WhirBaseTest {
     // @notice custom test, checked against whir repo
-    function test_expandRandomness() external {
+    function test_expandRandomness() external pure {
         BN254.ScalarField base = BN254.ScalarField.wrap(2);
         BN254.ScalarField[] memory res = VerifierUtils.expandRandomness(base, 5);
         assertEqUintScalarField(1, res[0]);

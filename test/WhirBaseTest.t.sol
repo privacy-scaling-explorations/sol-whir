@@ -11,6 +11,12 @@ contract WhirBaseTest is Test {
         assertEq(BN254.ScalarField.unwrap(a), BN254.ScalarField.unwrap(b));
     }
 
+    function assertEqScalarFieldArray(BN254.ScalarField[] memory a, BN254.ScalarField[] memory b) public pure {
+        for (uint256 i = 0; i < a.length; i++) {
+            assertEqScalarField(a[i], b[i]);
+        }
+    }
+
     function assertEqUintScalarField(uint256 a, BN254.ScalarField b) public pure {
         assertEq(a, BN254.ScalarField.unwrap(b));
     }

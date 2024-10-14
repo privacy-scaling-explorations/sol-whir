@@ -18,6 +18,11 @@ struct ParsedRound {
     BN254.ScalarField domainGenInv;
 }
 
+struct Statement {
+    MultilinearPoint[] points;
+    BN254.ScalarField[] evaluations;
+}
+
 struct ParsedProof {
     BN254.ScalarField[] initialCombinationRandomness;
     SumcheckRound[] initialSumcheckRounds;
@@ -32,6 +37,7 @@ struct ParsedProof {
     CoefficientList finalCoefficients;
 }
 
+/// @notice Various utilities used by the whir verifier
 library VerifierUtils {
     function computeFoldsHelped(ParsedRound[] memory parsedRounds, BN254.ScalarField[][] memory finalRandomnessAnswers)
         external
@@ -47,6 +53,13 @@ library VerifierUtils {
 
         return res;
     }
+
+    /// @notice line 172 in verifier.rs
+    function foldedDomainSize(uint256 foldingFactor) external returns (uint256) {}
+
+    function expDomainGen(BN254.ScalarField domainGen, uint256 foldingFactor) external returns (BN254.ScalarField) {}
 }
 
-contract Verifier {}
+contract Verifier {
+    function verify(Statement memory statement) external pure returns (bool) {}
+}

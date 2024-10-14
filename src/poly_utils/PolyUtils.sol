@@ -16,6 +16,37 @@ library PolyUtils {
         return MultilinearPoint(point);
     }
 
+    function expandFromUnivariate(BN254.ScalarField point, uint256 numVariables)
+        external
+        pure
+        returns (MultilinearPoint memory)
+    {
+        BN254.ScalarField[] memory res = new BN254.ScalarField[](numVariables);
+        BN254.ScalarField cur = point;
+        for (uint256 i = 0; i < numVariables; i++) {
+            res[numVariables - 1 - i] = cur;
+            cur = BN254.mul(cur, cur);
+        }
+        return MultilinearPoint(res);
+    }
+
+    function eqPolyOutside(MultilinearPoint memory coords, MultilinearPoint memory point)
+        external
+        pure
+        returns (BN254.ScalarField)
+    {
+        require(coords.point.length == point.point.length, "eqPolyOutside: number of variables should be the same");
+        BN254.ScalarField acc = BN254.ScalarField.wrap(1);
+        for (uint256 i = 0; i < coords.point.length; i++) {
+            (BN254.ScalarField l, BN254.ScalarField r) = (coords.point[i], point.point[i]);
+            BN254.ScalarField a = BN254.mul(l, r);
+            BN254.ScalarField b = BN254.add(BN254.ScalarField.wrap(1), BN254.negate(l));
+            BN254.ScalarField c = BN254.add(BN254.ScalarField.wrap(1), BN254.negate(r));
+            acc = BN254.mul(acc, BN254.add(a, BN254.mul(b, c)));
+        }
+        return acc;
+    }
+
     function eqPoly3(MultilinearPoint memory coords, uint256 point) public pure returns (BN254.ScalarField) {
         BN254.ScalarField acc = BN254.ScalarField.wrap(1);
 

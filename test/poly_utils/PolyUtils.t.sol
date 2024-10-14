@@ -9,6 +9,39 @@ import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 
 contract PolyUtilsTest is WhirBaseTest {
     // @notice test values from whir repo
+    function test_expandFromUnivariate() external {
+        uint256 numVariables = 4;
+        BN254.ScalarField[] memory point = new BN254.ScalarField[](4);
+        point[0] = BN254.ScalarField.wrap(256);
+        point[1] = BN254.ScalarField.wrap(16);
+        point[2] = BN254.ScalarField.wrap(4);
+        point[3] = BN254.ScalarField.wrap(2);
+
+        MultilinearPoint memory point2 = PolyUtils.expandFromUnivariate(BN254.ScalarField.wrap(2), numVariables);
+
+        // TODO? Not sure yet to implement from_binary_hypercube_point
+        // MultilinearPoint memory point0 = PolyUtils.expandFromUnivariate(BN254.ScalarField.wrap(0), numVariables);
+        // MultilinearPoint memory point1 = PolyUtils.expandFromUnivariate(BN254.ScalarField.wrap(1), numVariables);
+        //         assert_eq!(
+        //           MultilinearPoint::from_binary_hypercube_point(BinaryHypercubePoint(0), num_variables),
+        //         point0
+        //   );
+
+        assertEqScalarFieldArray(point, point2.point);
+    }
+
+    // @notice test value checked against whir implementation
+    function test_eqPolyOutside() external {
+        BN254.ScalarField expected = BN254.ScalarField.wrap(8658538);
+
+        BN254.ScalarField[] memory coords = new BN254.ScalarField[](2);
+        BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
+        (coords[0], coords[1]) = (BN254.ScalarField.wrap(42), BN254.ScalarField.wrap(36));
+        (point[1], point[0]) = (BN254.ScalarField.wrap(42), BN254.ScalarField.wrap(36));
+        assertEqUintScalarField(8684809, PolyUtils.eqPolyOutside(MultilinearPoint(coords), MultilinearPoint(point)));
+    }
+
+    // @notice test values from whir repo
     function test_equality3() external {
         BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
         point[0] = BN254.ScalarField.wrap(0);
