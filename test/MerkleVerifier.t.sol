@@ -45,6 +45,8 @@ contract MerkleVerifierTest is Test {
         bytes32 root;
     }
 
+    // @notice the file contains a Merkle proof that is converted directly from a WHIR proof
+    // (see `whir-helper` subproject)
     function test_verifyMultiProof_file() public {
         string memory proofJson = vm.readFile("./whir-helper/proof_output.json");
         bytes memory parsedProof = vm.parseJson(proofJson);
