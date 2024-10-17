@@ -35,7 +35,7 @@ contract MerkleVerifierTest is Test {
         );
         assertEq(res, true);
         uint256 gasUsedAbsorb = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb, 9948);
+        assertEq(gasUsedAbsorb, 10014);
     }
 
     struct ConvertedProof {
@@ -48,15 +48,36 @@ contract MerkleVerifierTest is Test {
     // @notice the file contains a Merkle proof that is converted directly from a WHIR proof
     // (see `whir-helper` subproject)
     function test_verifyMultiProof_file() public {
-        string memory proofJson = vm.readFile("./whir-helper/proof_output.json");
-        bytes memory parsedProof = vm.parseJson(proofJson);
-        ConvertedProof memory proof = abi.decode(parsedProof, (ConvertedProof));
-
         MerkleVerifier verifier = new MerkleVerifier();
+
+        string memory proofJson1 = vm.readFile("./whir-helper/proof_output_1.json");
+        bytes memory parsedProof1 = vm.parseJson(proofJson1);
+        ConvertedProof memory proof1 = abi.decode(parsedProof1, (ConvertedProof));
+
         vm.startSnapshotGas("verify");
-        bool res = verifier.verify(proof.proof, proof.root, proof.leaves, proof.proofFlags);
-        assertEq(res, true);
-        uint256 gasUsedAbsorb = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb, 10001);
+        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        assertEq(res1, true);
+        uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
+        assertEq(gasUsedAbsorb1, 190021);
+
+        string memory proofJson2 = vm.readFile("./whir-helper/proof_output_2.json");
+        bytes memory parsedProof2 = vm.parseJson(proofJson2);
+        ConvertedProof memory proof2 = abi.decode(parsedProof2, (ConvertedProof));
+
+        vm.startSnapshotGas("verify");
+        bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
+        assertEq(res2, true);
+        uint256 gasUsedAbsorb2 = vm.stopSnapshotGas("verify");
+        assertEq(gasUsedAbsorb2, 317714);
+
+        string memory proofJson3 = vm.readFile("./whir-helper/proof_output_3.json");
+        bytes memory parsedProof3 = vm.parseJson(proofJson3);
+        ConvertedProof memory proof3 = abi.decode(parsedProof3, (ConvertedProof));
+
+        vm.startSnapshotGas("verify");
+        bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
+        assertEq(res3, true);
+        uint256 gasUsedAbsorb3 = vm.stopSnapshotGas("verify");
+        assertEq(gasUsedAbsorb3, 361118);
     }
 }

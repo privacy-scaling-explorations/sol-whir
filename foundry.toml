@@ -3,5 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 solc = "0.8.20"
-fs_permissions = [{ access = "read", path = "./whir-helper/proof_output.json"}]
+fs_permissions = [
+    { access = "read", path = "./whir-helper/proof_output_1.json"},
+    { access = "read", path = "./whir-helper/proof_output_2.json"},
+    { access = "read", path = "./whir-helper/proof_output_3.json"},
+]
 

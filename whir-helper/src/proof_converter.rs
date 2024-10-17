@@ -102,7 +102,7 @@ pub fn convert_proof(
                 // The path goes from root to leaves, so we need to reverse
                 path[level - 1],
             );
-            parent_level_idx = leaf_idx >> level;
+            parent_level_idx = parent_level_idx >> 1;
         }
     }
 
