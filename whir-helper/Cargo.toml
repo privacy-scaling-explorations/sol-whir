@@ -34,6 +34,3 @@ ark-ff = { git = "https://github.com/WizardOfMenlo/algebra", branch = "fft_exten
 ark-poly = { git = "https://github.com/WizardOfMenlo/algebra", branch = "fft_extensions" }
 ark-serialize = { git = "https://github.com/WizardOfMenlo/algebra", branch = "fft_extensions" }
 ark-ec = { git = "https://github.com/WizardOfMenlo/algebra", branch = "fft_extensions" }
-
-[[example]]
-name = "generate_proof"
