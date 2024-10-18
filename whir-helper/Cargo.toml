@@ -19,7 +19,6 @@ serde_json = "1.0"
 
 [features]
 default = ["parallel"]
-#default = []
 parallel = [
     "dep:rayon",
     "ark-ff/parallel",

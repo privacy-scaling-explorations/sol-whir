@@ -1,0 +1,30 @@
+{
+  "leaves": [
+    "0x61a4e5214ba7477b03c1ca3e342865c06ec0a33a19eb32377a9df62b8a45ff18"
+  ],
+  "proof": [
+    "0x6587560dc8d45e930ccfadb84a0f71ba92f26de298f72d8fcb5ca313d2759ca1",
+    "0x3832112d92b76aa99ba3f659d3538869a1a93b14c00570783da3813019d3a363",
+    "0x80e53b8f8a39a4493e36ede628b0480973aee3f2bc375338d5465761ba3e28fa",
+    "0xd801cfefd2db84dc240adee8661bb7ce1b91b5b924670d81a2428e421618dc23",
+    "0x4777180c6c44443e22977ca9204178fd2a969792d1f873b6b3e9d790b7ae4f81",
+    "0x66dba0c2be7a298909ebe3d97256d425097fdc0a805e6f72a3d38a829cc4d044",
+    "0xd7643c388ebb4275cae5b6b1108ca2e34305029d20bc557fd90b34e34eb793e5",
+    "0x7eb9a3dc8b29544f3e8c6cd4629248f9397edb5434b40b817c5561aa1d2e5a68",
+    "0x4c4ed2be5376e5f990da7c8f0f180d4cf7242727cee6b6dc07ccb0efce4febcb",
+    "0x10dff4f8a25f823755e5dc8f8d7e674488aabee2f44b9443bea6ccf130354da7"
+  ],
+  "proofFlags": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "root": "0xa7f7e6bd7643e8fd164d7c9696c6dbc029e57013e6cddae25e8194cebd7c48c1"
+}

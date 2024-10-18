@@ -5,7 +5,11 @@ libs = ["lib"]
 solc = "0.8.20"
 fs_permissions = [
     { access = "read", path = "./whir-helper/proof_output_1.json"},
-    { access = "read", path = "./whir-helper/proof_output_2.json"},
-    { access = "read", path = "./whir-helper/proof_output_3.json"},
+    { access = "read", path = "./whir-helper/proof_output_10_1.json"},
+    { access = "read", path = "./whir-helper/proof_output_10_10.json"},
+    { access = "read", path = "./whir-helper/proof_output_10_100.json"},
+    { access = "read", path = "./whir-helper/proof_output_20_1.json"},
+    { access = "read", path = "./whir-helper/proof_output_20_10.json"},
+    { access = "read", path = "./whir-helper/proof_output_20_100.json"},
 ]
 
