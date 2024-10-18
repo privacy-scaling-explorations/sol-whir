@@ -43,7 +43,7 @@ contract MerkleVerifierTest is Test {
         bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
         assertEq(res1, true);
         uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb1, 14281);
+        assertEq(gasUsedAbsorb1, 14301);
 
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("./whir-helper/proof_output_10_10.json");
@@ -54,7 +54,7 @@ contract MerkleVerifierTest is Test {
         bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
         assertEq(res2, true);
         uint256 gasUsedAbsorb2 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb2, 136361);
+        assertEq(gasUsedAbsorb2, 140073);
 
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("./whir-helper/proof_output_10_100.json");
@@ -65,7 +65,7 @@ contract MerkleVerifierTest is Test {
         bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
         assertEq(res3, true);
         uint256 gasUsedAbsorb3 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb3, 740935);
+        assertEq(gasUsedAbsorb3, 720265);
     }
 
     // @notice tests sample proofs for the tree height of 20 (2^20 leaves)
@@ -81,7 +81,7 @@ contract MerkleVerifierTest is Test {
         bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
         assertEq(res1, true);
         uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb1, 24843);
+        assertEq(gasUsedAbsorb1, 24863);
 
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("./whir-helper/proof_output_20_10.json");
@@ -92,7 +92,7 @@ contract MerkleVerifierTest is Test {
         bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
         assertEq(res2, true);
         uint256 gasUsedAbsorb2 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb2, 306857);
+        assertEq(gasUsedAbsorb2, 333875);
 
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("./whir-helper/proof_output_20_100.json");
@@ -103,6 +103,6 @@ contract MerkleVerifierTest is Test {
         bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
         assertEq(res3, true);
         uint256 gasUsedAbsorb3 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb3, 3161642);
+        assertEq(gasUsedAbsorb3, 3171964);
     }
 }

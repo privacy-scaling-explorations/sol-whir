@@ -1,5 +1,9 @@
-use ark_crypto_primitives::merkle_tree::MultiPath;
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+use ark_crypto_primitives::merkle_tree::{MerkleTree, MultiPath};
+use serde::{
+    de::{MapAccess, Visitor},
+    ser::SerializeStruct,
+    Deserialize, Serialize, Serializer,
+};
 use std::collections::{HashMap, HashSet};
 
 use whir::crypto::{
@@ -9,11 +13,90 @@ use whir::crypto::{
 
 use crate::hasher::MerkleTreeParamsSorted;
 
+#[derive(Debug, PartialEq)]
 pub struct OpenZeppelinMultiProof {
     leaves: Vec<KeccakDigest>,
     proof: Vec<KeccakDigest>,
     proof_flags: Vec<bool>,
     root: KeccakDigest,
+}
+
+struct OpenZeppelinMultiProofVisitor {}
+impl<'de> Visitor<'de> for OpenZeppelinMultiProofVisitor {
+    type Value = OpenZeppelinMultiProof;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "OpenZeppelinMultiProof")
+    }
+
+    fn visit_map<A>(
+        self,
+        mut map: A,
+    ) -> Result<OpenZeppelinMultiProof, <A as MapAccess<'de>>::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut leaves: Option<Vec<KeccakDigest>> = None;
+        let mut proof: Option<Vec<KeccakDigest>> = None;
+        let mut proof_flags: Option<Vec<bool>> = None;
+        let mut root: Option<KeccakDigest> = None;
+
+        while let Some(key) = map.next_key::<String>()? {
+            match key.as_str() {
+                "leaves" => {
+                    //Parse the array of hex strings into KeccakDigests
+                    leaves = Some(
+                        map.next_value::<Vec<String>>()?
+                            .iter()
+                            .map(|hex_str| keccak_from_string(hex_str))
+                            .collect(),
+                    );
+                }
+                "proof" => {
+                    proof = Some(
+                        map.next_value::<Vec<String>>()?
+                            .iter()
+                            .map(|hex_str| keccak_from_string(hex_str))
+                            .collect(),
+                    );
+                }
+                "proofFlags" => {
+                    proof_flags = Some(map.next_value()?);
+                }
+                "root" => {
+                    root = Some(keccak_from_string(&map.next_value::<String>()?));
+                }
+                _ => {
+                    println!("Unknown key: {}", key);
+                }
+            }
+        }
+
+        Ok(OpenZeppelinMultiProof {
+            leaves: leaves.unwrap(),
+            proof: proof.unwrap(),
+            proof_flags: proof_flags.unwrap(),
+            root: root.unwrap(),
+        })
+    }
+}
+
+fn keccak_from_string(hex_str: &str) -> KeccakDigest {
+    //Remove the "0x" prefix
+    let hex_str = hex_str.trim_start_matches("0x");
+    let bytes = hex::decode(hex_str).unwrap();
+    let mut bytes_array = [0; 32];
+    bytes_array.copy_from_slice(&bytes);
+    KeccakDigest::from(bytes_array)
+}
+
+impl<'de> Deserialize<'de> for OpenZeppelinMultiProof {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(OpenZeppelinMultiProofVisitor {})
+    }
 }
 
 impl Serialize for OpenZeppelinMultiProof {
@@ -102,7 +185,7 @@ pub fn convert_proof(
                 // The path goes from root to leaves, so we need to reverse
                 path[level - 1],
             );
-            parent_level_idx = parent_level_idx >> 1;
+            parent_level_idx >>= 1;
         }
     }
 
@@ -148,5 +231,172 @@ where
         suffix.to_owned()
     } else {
         [prev_path[0..prefix_len].to_vec(), suffix.to_owned()].concat()
+    }
+}
+
+pub fn get_leaf_hashes(
+    merkle_tree: &MerkleTree<
+        MerkleTreeParamsSorted<ark_ff::Fp<ark_ff::MontBackend<fields::BN254Config, 4>, 4>>,
+    >,
+    indices_to_prove: &[usize],
+) -> Vec<KeccakDigest> {
+    indices_to_prove
+        .iter()
+        // Unfortunately, the Arkworks Merkle tree lacks a method to get the leaf hash directly
+        // so we get the "sibling of a sibling" hash instead
+        .map(|i| merkle_tree.get_leaf_sibling_hash(*i ^ 1))
+        .collect()
+}
+
+mod tests {
+
+    use std::fs::File;
+
+    use ark_crypto_primitives::merkle_tree::MerkleTree;
+
+    use rayon::slice::ParallelSlice;
+    use whir::crypto::fields::Field256;
+
+    use Field256 as F;
+
+    use crate::{
+        hasher::MerkleTreeParamsSorted,
+        proof_converter::{convert_proof, get_leaf_hashes, OpenZeppelinMultiProof},
+    };
+
+    #[test]
+    fn test_convert_proof_height_1() {
+        let tree_height = 1;
+        // For simplicity, the leaf preimages are the integers from 1 to 2^tree_height
+        let leaf_preimages: Vec<F> = (1..((1 << tree_height) + 1)).map(|x| F::from(x)).collect();
+
+        let leaves_iter = leaf_preimages.par_chunks_exact(1);
+
+        let mut indices_to_prove = vec![0, 1];
+
+        do_test(
+            leaves_iter.clone(),
+            &mut indices_to_prove,
+            "proof_output_1.json",
+        );
+    }
+
+    #[test]
+    fn test_convert_proof_height_10() {
+        let tree_height = 10;
+        // For simplicity, the leaf preimages are the integers from 1 to 2^tree_height
+        let leaf_preimages: Vec<F> = (1..((1 << tree_height) + 1)).map(|x| F::from(x)).collect();
+
+        let leaves_iter = leaf_preimages.par_chunks_exact(1);
+
+        // Tree height 10, one leaf to prove:
+        let mut indices_to_prove = vec![214];
+
+        do_test(
+            leaves_iter.clone(),
+            &mut indices_to_prove,
+            "proof_output_10_1.json",
+        );
+
+        // Tree height 10, 10 leaves to prove:
+        let mut indices_to_prove = vec![277, 587, 232, 630, 827, 132, 908, 701, 534, 932];
+
+        do_test(
+            leaves_iter.clone(),
+            &mut indices_to_prove,
+            "proof_output_10_10.json",
+        );
+
+        // Tree height 10, 100 leaves to prove:
+        let mut indices_to_prove = vec![
+            768, 433, 536, 784, 430, 575, 877, 166, 974, 500, 829, 458, 824, 48, 415, 410, 909,
+            210, 485, 515, 384, 203, 1006, 475, 946, 712, 73, 627, 492, 283, 903, 819, 596, 871,
+            678, 808, 511, 379, 269, 538, 582, 393, 545, 331, 588, 762, 640, 177, 171, 854, 984,
+            884, 666, 619, 891, 687, 912, 746, 83, 684, 910, 212, 683, 437, 883, 835, 539, 240, 75,
+            706, 462, 459, 438, 556, 498, 488, 633, 175, 260, 370, 272, 337, 242, 199, 409, 274,
+            26, 918, 88, 192, 532, 562, 205, 725, 676,
+        ];
+
+        do_test(
+            leaves_iter,
+            &mut indices_to_prove,
+            "proof_output_10_100.json",
+        );
+    }
+
+    #[test]
+    fn test_convert_proof_height_20() {
+        let tree_height = 20;
+        // For simplicity, the leaf preimages are the integers from 1 to 2^tree_height
+        let leaf_preimages: Vec<F> = (1..((1 << tree_height) + 1)).map(|x| F::from(x)).collect();
+
+        let leaves_iter = leaf_preimages.par_chunks_exact(1);
+
+        // Tree height 20, one leaf to prove:
+        let mut indices_to_prove = vec![16294];
+
+        do_test(
+            leaves_iter.clone(),
+            &mut indices_to_prove,
+            "proof_output_20_1.json",
+        );
+
+        // Tree height 20, 10 leaves to prove:
+        let mut indices_to_prove = vec![
+            872943, 281386, 781188, 158958, 816572, 929118, 24521, 911937, 473111, 85764,
+        ];
+
+        do_test(
+            leaves_iter.clone(),
+            &mut indices_to_prove,
+            "proof_output_20_10.json",
+        );
+
+        // Tree height 20, 100 leaves to prove:
+        let mut indices_to_prove = vec![
+            748994, 1033416, 271006, 636135, 862066, 527436, 300841, 653560, 408970, 988140,
+            708214, 595079, 295725, 587712, 366879, 573675, 526132, 789254, 675307, 254198, 596511,
+            527140, 383068, 119305, 99704, 1042764, 617841, 321203, 885103, 79982, 588632, 1040040,
+            568447, 184033, 382066, 569274, 1023696, 772943, 252569, 796627, 715993, 631805,
+            360758, 879133, 674315, 1000598, 372658, 58816, 132103, 476617, 1046157, 1002958,
+            677597, 551978, 546835, 222836, 848765, 59917, 1033276, 80003, 519660, 358965, 640174,
+            221549, 634166, 679292, 895295, 574928, 820779, 915242, 183438, 343921, 1043665,
+            907102, 853569, 632912, 945061, 571527, 892450, 685559, 638504, 933075, 657470, 154134,
+            372927, 143757, 869576, 477214, 716381, 1016022, 618421, 776932, 338531, 238972,
+            176408, 641002, 550129, 864620, 116431, 734462,
+        ];
+
+        do_test(
+            leaves_iter,
+            &mut indices_to_prove,
+            "proof_output_20_100.json",
+        );
+    }
+
+    fn do_test(
+        leaves_iter: rayon::slice::ChunksExact<
+            '_,
+            ark_ff::Fp<ark_ff::MontBackend<whir::crypto::fields::BN254Config, 4>, 4>,
+        >,
+        indices_to_prove: &mut [usize],
+        file_path: &str,
+    ) {
+        let merkle_tree =
+            MerkleTree::<MerkleTreeParamsSorted<F>>::new(&(), &(), leaves_iter).unwrap();
+
+        indices_to_prove.sort();
+
+        let proof = merkle_tree
+            .generate_multi_proof(indices_to_prove.to_owned())
+            .unwrap();
+
+        let leaves = get_leaf_hashes(&merkle_tree, indices_to_prove);
+
+        let converted_proof = convert_proof(&proof, leaves, merkle_tree.root());
+
+        let file = File::open(file_path).unwrap();
+        // Deserialize the OpenZeppelin proof from the file
+        let expected_proof: OpenZeppelinMultiProof = serde_json::from_reader(file).unwrap();
+        assert_eq!(converted_proof, expected_proof);
     }
 }
