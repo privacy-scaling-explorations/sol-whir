@@ -12,7 +12,7 @@ contract MerkleVerifierTest is Test {
     function test_verifyMultiProof_1() public {
         MerkleVerifier verifier = new MerkleVerifier();
 
-        string memory proofJson1 = vm.readFile("./whir-helper/proof_output_1.json");
+        string memory proofJson1 = vm.readFile("test/data/merkle_proof_output_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
@@ -28,7 +28,7 @@ contract MerkleVerifierTest is Test {
         MerkleVerifier verifier = new MerkleVerifier();
 
         // Proving a single leaf
-        string memory proofJson1 = vm.readFile("./whir-helper/proof_output_10_1.json");
+        string memory proofJson1 = vm.readFile("test/data/merkle_proof_output_10_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
@@ -39,7 +39,7 @@ contract MerkleVerifierTest is Test {
         assertEq(gasUsedAbsorb1, 14301);
 
         // Proving 10 leaves
-        string memory proofJson2 = vm.readFile("./whir-helper/proof_output_10_10.json");
+        string memory proofJson2 = vm.readFile("test/data/merkle_proof_output_10_10.json");
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
@@ -50,7 +50,7 @@ contract MerkleVerifierTest is Test {
         assertEq(gasUsedAbsorb2, 140073);
 
         // Proving 100 leaves
-        string memory proofJson3 = vm.readFile("./whir-helper/proof_output_10_100.json");
+        string memory proofJson3 = vm.readFile("test/data/merkle_proof_output_10_100.json");
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
@@ -66,7 +66,7 @@ contract MerkleVerifierTest is Test {
         MerkleVerifier verifier = new MerkleVerifier();
 
         // Proving a single leaf
-        string memory proofJson1 = vm.readFile("./whir-helper/proof_output_20_1.json");
+        string memory proofJson1 = vm.readFile("test/data/merkle_proof_output_20_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
@@ -77,7 +77,7 @@ contract MerkleVerifierTest is Test {
         assertEq(gasUsedAbsorb1, 24863);
 
         // Proving 10 leaves
-        string memory proofJson2 = vm.readFile("./whir-helper/proof_output_20_10.json");
+        string memory proofJson2 = vm.readFile("test/data/merkle_proof_output_20_10.json");
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
@@ -88,7 +88,7 @@ contract MerkleVerifierTest is Test {
         assertEq(gasUsedAbsorb2, 333875);
 
         // Proving 100 leaves
-        string memory proofJson3 = vm.readFile("./whir-helper/proof_output_20_100.json");
+        string memory proofJson3 = vm.readFile("test/data/merkle_proof_output_20_100.json");
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
