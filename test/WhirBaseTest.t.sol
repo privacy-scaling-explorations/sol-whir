@@ -18,12 +18,18 @@ contract WhirBaseTest is Test {
     }
 
     function assertEqUintScalarField(uint256 a, BN254.ScalarField b) public pure {
-        assertEq(a, BN254.ScalarField.unwrap(b));
+        assertEq(a, BN254.ScalarField.unwrap(BN254.add(b, BN254.ScalarField.wrap(0))));
     }
 
     function assertEqUint8Array(uint8[] memory a, uint8[] memory b) public pure {
         for (uint256 i = 0; i < a.length; i++) {
             assertEq(a[i], b[i]);
+        }
+    }
+
+    function logScalars(BN254.ScalarField[] memory scalars) public pure {
+        for (uint256 i = 0; i < scalars.length; i++) {
+            console.log(BN254.ScalarField.unwrap(BN254.add(scalars[i], BN254.ScalarField.wrap(0))));
         }
     }
 }
