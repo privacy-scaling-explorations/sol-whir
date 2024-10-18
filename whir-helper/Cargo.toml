@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-whir = { git = "https://github.com/WizardOfMenlo/whir.git" }
+whir = { git = "https://github.com/dmpierre/whir.git" }
 ark-crypto-primitives = { version = "0.4", features = ["merkle_tree"] }
 ark-ff = { version = "0.4", features = ["asm"] }
 ark-serialize = "0.4"
