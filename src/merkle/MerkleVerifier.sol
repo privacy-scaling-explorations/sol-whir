@@ -3,7 +3,13 @@ pragma solidity ^0.8.20;
 
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
-// TODO integrate into Verifier.sol instead
+struct MultiProof {
+    bytes32[] leaves;
+    bytes32[] proof;
+    bool[] proofFlags;
+    bytes32 root;
+}
+
 contract MerkleVerifier {
     function verify(bytes32[] memory proof, bytes32 root, bytes32[] memory leaves, bool[] memory proofFlags)
         public

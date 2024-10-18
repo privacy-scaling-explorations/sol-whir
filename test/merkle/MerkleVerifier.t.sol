@@ -2,18 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {Test, console, Vm} from "forge-std/Test.sol";
-import {MerkleVerifier} from "src/MerkleVerifier.sol";
+import {MerkleVerifier, MultiProof} from "../../src/merkle/MerkleVerifier.sol";
 import {console} from "forge-std/console.sol";
 
 contract MerkleVerifierTest is Test {
     function setUp() public {}
-
-    struct ConvertedProof {
-        bytes32[] leaves;
-        bytes32[] proof;
-        bool[] proofFlags;
-        bytes32 root;
-    }
 
     // @notice tests sample proofs for the tree height of 1 (two leaves)
     function test_verifyMultiProof_1() public {
@@ -21,7 +14,7 @@ contract MerkleVerifierTest is Test {
 
         string memory proofJson1 = vm.readFile("./whir-helper/proof_output_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
-        ConvertedProof memory proof1 = abi.decode(parsedProof1, (ConvertedProof));
+        MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
@@ -37,7 +30,7 @@ contract MerkleVerifierTest is Test {
         // Proving a single leaf
         string memory proofJson1 = vm.readFile("./whir-helper/proof_output_10_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
-        ConvertedProof memory proof1 = abi.decode(parsedProof1, (ConvertedProof));
+        MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
@@ -48,7 +41,7 @@ contract MerkleVerifierTest is Test {
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("./whir-helper/proof_output_10_10.json");
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
-        ConvertedProof memory proof2 = abi.decode(parsedProof2, (ConvertedProof));
+        MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
@@ -59,7 +52,7 @@ contract MerkleVerifierTest is Test {
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("./whir-helper/proof_output_10_100.json");
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
-        ConvertedProof memory proof3 = abi.decode(parsedProof3, (ConvertedProof));
+        MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
@@ -75,7 +68,7 @@ contract MerkleVerifierTest is Test {
         // Proving a single leaf
         string memory proofJson1 = vm.readFile("./whir-helper/proof_output_20_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
-        ConvertedProof memory proof1 = abi.decode(parsedProof1, (ConvertedProof));
+        MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
@@ -86,7 +79,7 @@ contract MerkleVerifierTest is Test {
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("./whir-helper/proof_output_20_10.json");
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
-        ConvertedProof memory proof2 = abi.decode(parsedProof2, (ConvertedProof));
+        MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
@@ -97,7 +90,7 @@ contract MerkleVerifierTest is Test {
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("./whir-helper/proof_output_20_100.json");
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
-        ConvertedProof memory proof3 = abi.decode(parsedProof3, (ConvertedProof));
+        MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
         vm.startSnapshotGas("verify");
         bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
