@@ -9,7 +9,7 @@ import {WhirBaseTest} from "../WhirBaseTest.t.sol";
 
 contract PolyUtilsTest is WhirBaseTest {
     // @notice test values from whir repo
-    function test_expandFromUnivariate() external {
+    function test_expandFromUnivariate() external pure {
         uint256 numVariables = 4;
         BN254.ScalarField[] memory point = new BN254.ScalarField[](4);
         point[0] = BN254.ScalarField.wrap(256);
@@ -31,9 +31,7 @@ contract PolyUtilsTest is WhirBaseTest {
     }
 
     // @notice test value checked against whir implementation
-    function test_eqPolyOutside() external {
-        BN254.ScalarField expected = BN254.ScalarField.wrap(8658538);
-
+    function test_eqPolyOutside() external pure {
         BN254.ScalarField[] memory coords = new BN254.ScalarField[](2);
         BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
         (coords[0], coords[1]) = (BN254.ScalarField.wrap(42), BN254.ScalarField.wrap(36));
@@ -42,7 +40,7 @@ contract PolyUtilsTest is WhirBaseTest {
     }
 
     // @notice test values from whir repo
-    function test_equality3() external {
+    function test_equality3() external pure {
         BN254.ScalarField[] memory point = new BN254.ScalarField[](2);
         point[0] = BN254.ScalarField.wrap(0);
         point[1] = BN254.ScalarField.wrap(0);
