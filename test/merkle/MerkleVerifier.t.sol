@@ -17,10 +17,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
         uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb1, 4841);
+        assertEq(gasUsedAbsorb1, 6175);
     }
 
     // @notice tests sample proofs for the tree height of 10 (2^10 leaves)
@@ -33,10 +33,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
         uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb1, 14301);
+        assertEq(gasUsedAbsorb1, 15160);
 
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("test/data/merkle_proof_output_10_10.json");
@@ -44,10 +44,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
+        bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.preimages, proof2.proofFlags);
         assertEq(res2, true);
         uint256 gasUsedAbsorb2 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb2, 140073);
+        assertEq(gasUsedAbsorb2, 180127);
 
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("test/data/merkle_proof_output_10_100.json");
@@ -55,10 +55,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
+        bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.preimages, proof3.proofFlags);
         assertEq(res3, true);
         uint256 gasUsedAbsorb3 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb3, 720265);
+        assertEq(gasUsedAbsorb3, 977454);
     }
 
     // @notice tests sample proofs for the tree height of 20 (2^20 leaves)
@@ -71,10 +71,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = verifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
         uint256 gasUsedAbsorb1 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb1, 24863);
+        assertEq(gasUsedAbsorb1, 25697);
 
         // Proving 10 leaves
         string memory proofJson2 = vm.readFile("test/data/merkle_proof_output_20_10.json");
@@ -82,10 +82,10 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
+        bool res2 = verifier.verify(proof2.proof, proof2.root, proof2.preimages, proof2.proofFlags);
         assertEq(res2, true);
         uint256 gasUsedAbsorb2 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb2, 333875);
+        assertEq(gasUsedAbsorb2, 386896);
 
         // Proving 100 leaves
         string memory proofJson3 = vm.readFile("test/data/merkle_proof_output_20_100.json");
@@ -93,9 +93,9 @@ contract MerkleVerifierTest is Test {
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
         vm.startSnapshotGas("verify");
-        bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
+        bool res3 = verifier.verify(proof3.proof, proof3.root, proof3.preimages, proof3.proofFlags);
         assertEq(res3, true);
         uint256 gasUsedAbsorb3 = vm.stopSnapshotGas("verify");
-        assertEq(gasUsedAbsorb3, 3171964);
+        assertEq(gasUsedAbsorb3, 4798001);
     }
 }

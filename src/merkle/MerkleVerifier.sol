@@ -11,11 +11,16 @@ struct MultiProof {
 }
 
 contract MerkleVerifier {
-    function verify(bytes32[] memory proof, bytes32 root, bytes32[] memory leaves, bool[] memory proofFlags)
+    function verify(bytes32[] memory proof, bytes32 root, uint256[][] memory leaves, bool[] memory proofFlags)
         public
         pure
         returns (bool)
     {
-        return MerkleProof.multiProofVerify(proof, proofFlags, root, leaves);
+        bytes32[] memory leafHashes = new bytes32[](leaves.length);
+        for (uint256 i = 0; i < leaves.length; i++) {
+            leafHashes[i] = keccak256(abi.encodePacked(leaves[i]));
+        }
+
+        return MerkleProof.multiProofVerify(proof, proofFlags, root, leafHashes);
     }
 }
