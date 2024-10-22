@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
 struct MultiProof {
-    bytes32[] leaves;
+    uint256[][] preimages;
     bytes32[] proof;
     bool[] proofFlags;
     bytes32 root;
