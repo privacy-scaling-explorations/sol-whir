@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
+// TODO preimages and root will be provided separately
+// They are included for testing convenience
 struct MultiProof {
     uint256[][] preimages;
     bytes32[] proof;
