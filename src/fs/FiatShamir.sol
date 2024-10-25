@@ -54,7 +54,7 @@ library EVMFs {
         bytes memory res = new bytes(n);
         for (uint128 i = 0; i < n; i++) {
             arthur.state[i] = arthur.transcript[arthur.cur + i];
-            res[31 - i] = arthur.transcript[arthur.cur + i];
+            res[n - 1 - i] = arthur.transcript[arthur.cur + i];
         }
         arthur.cur += n; // transcript pointer goes forward
         return (arthur, res);
