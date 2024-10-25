@@ -63,12 +63,15 @@ contract EVMFsTest is WhirBaseTest {
         Arthur memory arthur = EVMFs.newArthur();
         // The value was generated in Rust
         arthur.transcript =
-            hex"000000000000000000000000000000000000000000000000000000000000002a5c700e0000000000000000000000000000000000000000000000000000000000";
+            hex"000000000000000000000000000000000000000000000000000000000000002a5c700e00000000000000000000000000000000000000000000000000000000000000000000000045";
         (Arthur memory modifiedArthur, BN254.ScalarField[] memory scalars) = EVMFs.nextScalars(arthur, 1);
-        // The squeezed scalar should be equal to 42
+        // The first squeezed scalar should be equal to 42
         assertTrue(BN254.ScalarField.unwrap(scalars[0]) == uint256(42), "Invalid scalar");
-        (, bool result) = EVMFs.challengePow(modifiedArthur, 20);
+        (Arthur memory modifiedArthur2, bool result) = EVMFs.challengePow(modifiedArthur, 20);
         assertTrue(result, "Invalid PoW");
+        (, BN254.ScalarField[] memory scalars2) = EVMFs.nextScalars(modifiedArthur2, 1);
+        // The second squeezed scalar should be equal to 69
+        assertTrue(BN254.ScalarField.unwrap(scalars2[0]) == uint256(69), "Invalid scalar");
     }
 
     function test_PoW_bad_nonce() external pure {
@@ -85,7 +88,7 @@ contract EVMFsTest is WhirBaseTest {
 
     function test_PoW_wrong_difficulty() external pure {
         Arthur memory arthur = EVMFs.newArthur();
-        // Contains the same scalar (42) but the wrong nonce
+        // Contains the same scalar (42) but the wrong difficulty
         arthur.transcript =
             hex"000000000000000000000000000000000000000000000000000000000000002a5c700c0000000000000000000000000000000000000000000000000000000000";
         (Arthur memory modifiedArthur, BN254.ScalarField[] memory scalars) = EVMFs.nextScalars(arthur, 1);
