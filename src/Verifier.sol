@@ -5,6 +5,9 @@ import {MultilinearPoint} from "./poly_utils/PolyUtils.sol";
 import {SumcheckRound} from "./sumcheck/Proof.sol";
 import {BN254} from "solidity-bn254/BN254.sol";
 import {CoefficientList} from "./poly_utils/Coeffs.sol";
+import {Arthur, EVMFs} from "../src/fs/FiatShamir.sol";
+import {Utils} from "./utils/Utils.sol";
+import {console} from "forge-std/Test.sol";
 
 struct ParsedRound {
     MultilinearPoint foldingRandomness;
@@ -37,6 +40,36 @@ struct ParsedProof {
     CoefficientList finalCoefficients;
 }
 
+struct ParsedCommitment {
+    bytes32 root;
+    BN254.ScalarField[] oodPoints;
+    BN254.ScalarField[] oodAnswers;
+}
+
+struct RoundParameters {
+    uint256 foldingPowBits;
+    uint256 logInvRate;
+    uint256 numQueries;
+    uint256 oodSamples;
+    uint256 powBits;
+}
+
+struct WhirConfig {
+    uint32 commitmentOodSamples;
+    uint256 finalFoldingPowBits;
+    uint256 finalLogInvRate;
+    uint256 finalPowBits;
+    uint256 finalQueries;
+    uint256 finalSumcheckRound;
+    uint256 foldingFactor;
+    uint256 maxPow;
+    uint256 numVariables;
+    RoundParameters[] roundParameters;
+    uint256 securityLevel;
+    uint256 startingFoldingPowBits;
+    uint256 startingLogInvRate;
+}
+
 /// @notice Various utilities used by the whir verifier
 library VerifierUtils {
     function computeFoldsHelped(ParsedRound[] memory parsedRounds, BN254.ScalarField[][] memory finalRandomnessAnswers)
@@ -58,6 +91,22 @@ library VerifierUtils {
     function foldedDomainSize(uint256 foldingFactor) external returns (uint256) {}
 
     function expDomainGen(BN254.ScalarField domainGen, uint256 foldingFactor) external returns (BN254.ScalarField) {}
+
+    function parseCommitment(WhirConfig calldata config, Arthur memory arthur)
+        external
+        pure
+        returns (Arthur memory, ParsedCommitment memory)
+    {
+        bytes memory root;
+        BN254.ScalarField[] memory oodPoints = new BN254.ScalarField[](config.commitmentOodSamples);
+        BN254.ScalarField[] memory oodAnswers = new BN254.ScalarField[](config.commitmentOodSamples);
+        (arthur, root) = EVMFs.nextBytes(arthur, 32);
+        if (config.commitmentOodSamples > 0) {
+            (arthur, oodPoints) = EVMFs.squeezeScalars(arthur, config.commitmentOodSamples);
+            (arthur, oodAnswers) = EVMFs.nextScalars(arthur, config.commitmentOodSamples);
+        }
+        return (arthur, ParsedCommitment(Utils.bytesToBytes32(root, 0), oodPoints, oodAnswers));
+    }
 }
 
 contract Verifier {
