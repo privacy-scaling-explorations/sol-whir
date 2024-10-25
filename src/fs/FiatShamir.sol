@@ -34,6 +34,10 @@ library EVMFs {
     }
 
     function squeezeBytes(Arthur memory arthur, uint32 n) external pure returns (Arthur memory, bytes32[] memory) {
+        return _squeezeBytes(arthur, n);
+    }
+
+    function _squeezeBytes(Arthur memory arthur, uint32 n) internal pure returns (Arthur memory, bytes32[] memory) {
         bytes32[] memory challenges = new bytes32[](n);
         bytes32 challengeBytes = keccak256(abi.encodePacked(arthur.state, uint32(0)));
         challenges[0] = challengeBytes;
@@ -50,11 +54,15 @@ library EVMFs {
     }
 
     function nextBytes(Arthur memory arthur, uint128 n) external pure returns (Arthur memory, bytes memory) {
+        return _nextBytes(arthur, n);
+    }
+
+    function _nextBytes(Arthur memory arthur, uint128 n) internal pure returns (Arthur memory, bytes memory) {
         arthur.state = new bytes(n);
         bytes memory res = new bytes(n);
         for (uint128 i = 0; i < n; i++) {
             arthur.state[i] = arthur.transcript[arthur.cur + i];
-            res[31 - i] = arthur.transcript[arthur.cur + i];
+            res[n - 1 - i] = arthur.transcript[arthur.cur + i];
         }
         arthur.cur += n; // transcript pointer goes forward
         return (arthur, res);
@@ -79,5 +87,17 @@ library EVMFs {
         }
         arthur.cur += n * 32; // transcript pointer goes forward
         return (arthur, scalars);
+    }
+
+    function challengePow(Arthur memory arthur, uint256 bits) external pure returns (Arthur memory, bool) {
+        (Arthur memory squeezedArthur, bytes32[] memory challenge) = EVMFs._squeezeBytes(arthur, 1);
+        // The nonce is a 64-bit uint (=8x8 bytes) on the Rust side (the return of PowStrategy::solve)
+        (Arthur memory nextArthur, bytes memory nonce) = EVMFs._nextBytes(squeezedArthur, 8);
+
+        uint256 threshold = uint256(1) << (256 - bits);
+        bytes memory input = abi.encodePacked(challenge[0], nonce);
+        bytes32 hash = keccak256(input);
+        uint256 hashValue = uint256(hash);
+        return (nextArthur, hashValue < threshold);
     }
 }

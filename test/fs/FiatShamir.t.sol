@@ -58,4 +58,40 @@ contract EVMFsTest is WhirBaseTest {
         assertEq(bytesArray[0], hex"739dee39dfe0e4116cf2fa867fcc4d4f985eb00353a7f5d164c8933d0f53c840");
         assertEq(bytesArray[1], hex"2c49be39f1c3b49c2aa0f911b1c9a494d68124585d2cc86ce890f2bc79628706");
     }
+
+    function test_PoW() external pure {
+        Arthur memory arthur = EVMFs.newArthur();
+        // The value was generated in Rust
+        arthur.transcript =
+            hex"000000000000000000000000000000000000000000000000000000000000002a5c700e0000000000000000000000000000000000000000000000000000000000";
+        (Arthur memory modifiedArthur, BN254.ScalarField[] memory scalars) = EVMFs.nextScalars(arthur, 1);
+        // The squeezed scalar should be equal to 42
+        assertTrue(BN254.ScalarField.unwrap(scalars[0]) == uint256(42), "Invalid scalar");
+        (, bool result) = EVMFs.challengePow(modifiedArthur, 20);
+        assertTrue(result, "Invalid PoW");
+    }
+
+    function test_PoW_bad_nonce() external pure {
+        Arthur memory arthur = EVMFs.newArthur();
+        // Contains the same scalar (42) but the wrong nonce
+        arthur.transcript =
+            hex"000000000000000000000000000000000000000000000000000000000000002a5c700c0000000000000000000000000000000000000000000000000000000000";
+        (Arthur memory modifiedArthur, BN254.ScalarField[] memory scalars) = EVMFs.nextScalars(arthur, 1);
+        // The squeezed scalar should be equal to 42
+        assertTrue(BN254.ScalarField.unwrap(scalars[0]) == uint256(42), "Invalid scalar");
+        (, bool result) = EVMFs.challengePow(modifiedArthur, 20);
+        assertFalse(result, "The PoW should be invalid");
+    }
+
+    function test_PoW_wrong_difficulty() external pure {
+        Arthur memory arthur = EVMFs.newArthur();
+        // Contains the same scalar (42) but the wrong nonce
+        arthur.transcript =
+            hex"000000000000000000000000000000000000000000000000000000000000002a5c700c0000000000000000000000000000000000000000000000000000000000";
+        (Arthur memory modifiedArthur, BN254.ScalarField[] memory scalars) = EVMFs.nextScalars(arthur, 1);
+        // The squeezed scalar should be equal to 42
+        assertTrue(BN254.ScalarField.unwrap(scalars[0]) == uint256(42), "Invalid scalar");
+        (, bool result) = EVMFs.challengePow(modifiedArthur, 21);
+        assertFalse(result, "The PoW should be invalid");
+    }
 }
