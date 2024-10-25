@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
+import {console} from "forge-std/Test.sol";
 import {BN254} from "solidity-bn254/BN254.sol";
+import {LibSort} from "solady/src/utils/LibSort.sol";
 
 library Utils {
     // we provide a few useful constants used throughout the library
@@ -51,5 +53,26 @@ library Utils {
             scalars[i] = BN254.ScalarField.wrap(values[i]);
         }
         return scalars;
+    }
+
+    function rangedArray(BN254.ScalarField[] memory values, uint256 max) external pure returns (uint256[] memory) {
+        uint256[] memory ranged = new uint256[](values.length);
+        for (uint256 i = 0; i < values.length; i++) {
+            ranged[i] = toRange(values[i], max);
+        }
+        return ranged;
+    }
+
+    // @dev no clue why just unwrapping is incorrect, requires to add a 0 :(
+    function toRange(BN254.ScalarField value, uint256 max) private pure returns (uint256) {
+        return BN254.ScalarField.unwrap(BN254.add(value, BN254.ScalarField.wrap(0))) % max;
+    }
+
+    function bytesToBytes32(bytes memory b, uint256 offset) external pure returns (bytes32) {
+        bytes32 out;
+        for (uint256 i = 0; i < 32; i++) {
+            out |= bytes32(b[offset + i] & 0xFF) >> (i * 8);
+        }
+        return out;
     }
 }
