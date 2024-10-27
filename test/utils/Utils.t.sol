@@ -30,6 +30,17 @@ contract UtilsTest is WhirBaseTest {
         assertEqUint8Array(res2, expectedRes2);
     }
 
+    // @notice custom test, checked against whir repo
+    function test_expandRandomness() external pure {
+        BN254.ScalarField base = BN254.ScalarField.wrap(2);
+        BN254.ScalarField[] memory res = Utils.expandRandomness(base, 5);
+        assertEqUintScalarField(1, res[0]);
+        assertEqUintScalarField(2, res[1]);
+        assertEqUintScalarField(4, res[2]);
+        assertEqUintScalarField(8, res[3]);
+        assertEqUintScalarField(16, res[4]);
+    }
+
     // @notice values from rust implem
     function test_toRangeSortAndDedup() external pure {
         bytes memory transcript = new bytes(2);

@@ -26,6 +26,16 @@ library Utils {
         return BN254.ScalarField.wrap(value);
     }
 
+    function expandRandomness(BN254.ScalarField base, uint256 len) external pure returns (BN254.ScalarField[] memory) {
+        BN254.ScalarField[] memory res = new BN254.ScalarField[](len);
+        BN254.ScalarField acc = BN254.ScalarField.wrap(1);
+        for (uint256 i = 0; i < len; i++) {
+            res[i] = acc;
+            acc = BN254.mul(acc, base);
+        }
+        return res;
+    }
+
     function arrayScalarFieldToUint(BN254.ScalarField[] memory scalars) public pure returns (uint256[] memory) {
         uint256[] memory values = new uint256[](scalars.length);
         for (uint256 i = 0; i < scalars.length; i++) {
@@ -74,5 +84,18 @@ library Utils {
             out |= bytes32(b[offset + i] & 0xFF) >> (i * 8);
         }
         return out;
+    }
+
+    // TODO: to be removed!
+    function logScalars(BN254.ScalarField[] memory scalars) public pure {
+        for (uint256 i = 0; i < scalars.length; i++) {
+            console.log(BN254.ScalarField.unwrap(BN254.add(scalars[i], BN254.ScalarField.wrap(0))));
+        }
+    }
+
+    function logUints(uint256[] memory values) public pure {
+        for (uint256 i = 0; i < values.length; i++) {
+            console.log(values[i]);
+        }
     }
 }

@@ -15,7 +15,7 @@ struct SumcheckPolynomial {
 
 struct SumcheckRound {
     SumcheckPolynomial polynomial;
-    uint256 n;
+    BN254.ScalarField foldingRandomnessSingle;
 }
 
 library Sumcheck {
