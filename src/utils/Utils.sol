@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import {console} from "forge-std/Test.sol";
 import {BN254} from "solidity-bn254/BN254.sol";
 import {LibSort} from "solady/src/utils/LibSort.sol";
+import {ParsedRound} from "../Verifier.sol";
 
 library Utils {
     // we provide a few useful constants used throughout the library
@@ -20,6 +20,14 @@ library Utils {
             scalars[i] = BN254.ScalarField.wrap(values[i]);
         }
         return scalars;
+    }
+
+    function arrayToScalarField2(uint256[][] memory values) public pure returns (BN254.ScalarField[][] memory) {
+        BN254.ScalarField[][] memory scalarArrays = new BN254.ScalarField[][](values.length);
+        for (uint256 i = 0; i < values.length; i++) {
+            scalarArrays[i] = arrayToScalarField(values[i]);
+        }
+        return scalarArrays;
     }
 
     function uintToScalarField(uint256 value) public pure returns (BN254.ScalarField) {
@@ -84,18 +92,5 @@ library Utils {
             out |= bytes32(b[offset + i] & 0xFF) >> (i * 8);
         }
         return out;
-    }
-
-    // TODO: to be removed!
-    function logScalars(BN254.ScalarField[] memory scalars) public pure {
-        for (uint256 i = 0; i < scalars.length; i++) {
-            console.log(BN254.ScalarField.unwrap(BN254.add(scalars[i], BN254.ScalarField.wrap(0))));
-        }
-    }
-
-    function logUints(uint256[] memory values) public pure {
-        for (uint256 i = 0; i < values.length; i++) {
-            console.log(values[i]);
-        }
     }
 }

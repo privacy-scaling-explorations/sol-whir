@@ -13,7 +13,7 @@ contract MerkleVerifierTest is Test {
         string memory proofJson1 = vm.readFile("test/data/merkle_proof_output_1.json");
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
-        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
     }
 
@@ -24,7 +24,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
-        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
 
         // Proving 10 leaves
@@ -32,7 +32,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
-        bool res2 = MerkleVerifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
+        bool res2 = MerkleVerifier.verify(proof2.proof, proof2.root, proof2.preimages, proof2.proofFlags);
         assertEq(res2, true);
 
         // Proving 100 leaves
@@ -40,7 +40,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
-        bool res3 = MerkleVerifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
+        bool res3 = MerkleVerifier.verify(proof3.proof, proof3.root, proof3.preimages, proof3.proofFlags);
         assertEq(res3, true);
     }
 
@@ -51,7 +51,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof1 = vm.parseJson(proofJson1);
         MultiProof memory proof1 = abi.decode(parsedProof1, (MultiProof));
 
-        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.leaves, proof1.proofFlags);
+        bool res1 = MerkleVerifier.verify(proof1.proof, proof1.root, proof1.preimages, proof1.proofFlags);
         assertEq(res1, true);
 
         // Proving 10 leaves
@@ -59,7 +59,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof2 = vm.parseJson(proofJson2);
         MultiProof memory proof2 = abi.decode(parsedProof2, (MultiProof));
 
-        bool res2 = MerkleVerifier.verify(proof2.proof, proof2.root, proof2.leaves, proof2.proofFlags);
+        bool res2 = MerkleVerifier.verify(proof2.proof, proof2.root, proof2.preimages, proof2.proofFlags);
         assertEq(res2, true);
 
         // Proving 100 leaves
@@ -67,7 +67,7 @@ contract MerkleVerifierTest is Test {
         bytes memory parsedProof3 = vm.parseJson(proofJson3);
         MultiProof memory proof3 = abi.decode(parsedProof3, (MultiProof));
 
-        bool res3 = MerkleVerifier.verify(proof3.proof, proof3.root, proof3.leaves, proof3.proofFlags);
+        bool res3 = MerkleVerifier.verify(proof3.proof, proof3.root, proof3.preimages, proof3.proofFlags);
         assertEq(res3, true);
     }
 }

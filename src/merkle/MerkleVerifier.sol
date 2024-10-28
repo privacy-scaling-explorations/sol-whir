@@ -12,7 +12,7 @@ struct MultiProof {
     bytes32 root;
 }
 
-contract MerkleVerifier {
+library MerkleVerifier {
     function verify(bytes32[] memory proof, bytes32 root, uint256[][] memory leaves, bool[] memory proofFlags)
         public
         pure
