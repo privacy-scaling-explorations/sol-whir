@@ -2,18 +2,131 @@
 pragma solidity ^0.8.20;
 
 import {BN254} from "solidity-bn254/BN254.sol";
-import {Test, console} from "forge-std/Test.sol";
-import {MultilinearPoint} from "../poly_utils/PolyUtils.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-struct CoefficientList {
-    BN254.ScalarField[] coeffs;
-    uint256 numVariables;
+library Multivariate {
+    uint256 internal constant R_MOD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
+    // TODO: we would like to remove this, though it is still used in VerifierUtils
+    function evalMultivariateBytes32(bytes32[] calldata coeffs, BN254.ScalarField[] calldata point)
+        external
+        pure
+        returns (BN254.ScalarField res)
+    {
+        uint256 length;
+        assembly {
+            length := point.length
+            switch point.length
+            case 0 { res := calldataload(coeffs.offset) }
+            case 1 {
+                let c0 := calldataload(coeffs.offset)
+                let c1 := calldataload(add(coeffs.offset, 0x20))
+                let p0 := calldataload(point.offset)
+                res := addmod(c0, mulmod(c1, p0, R_MOD), R_MOD)
+            }
+            case 2 {
+                let c0 := calldataload(coeffs.offset)
+                let c1 := calldataload(add(coeffs.offset, 0x20))
+                let c2 := calldataload(add(coeffs.offset, 0x40))
+                let c3 := calldataload(add(coeffs.offset, 0x60))
+                let p0 := calldataload(point.offset)
+                let p1 := calldataload(add(point.offset, 0x20))
+                let b0 := addmod(c0, mulmod(c1, p1, R_MOD), R_MOD)
+                let b1 := addmod(c2, mulmod(c3, p1, R_MOD), R_MOD)
+                res := addmod(b0, mulmod(b1, p0, R_MOD), R_MOD)
+            }
+            case 3 {
+                let c0 := calldataload(coeffs.offset)
+                let c1 := calldataload(add(coeffs.offset, 0x20))
+                let c2 := calldataload(add(coeffs.offset, 0x40))
+                let c3 := calldataload(add(coeffs.offset, 0x60))
+                let c4 := calldataload(add(coeffs.offset, 0x80))
+                let c5 := calldataload(add(coeffs.offset, 0xa0))
+                let c6 := calldataload(add(coeffs.offset, 0xc0))
+                let c7 := calldataload(add(coeffs.offset, 0xe0))
+                let p0 := calldataload(point.offset)
+                let p1 := calldataload(add(point.offset, 0x20))
+                let p2 := calldataload(add(point.offset, 0x40))
+                let b00 := addmod(c0, mulmod(c1, p2, R_MOD), R_MOD)
+                let b01 := addmod(c2, mulmod(c3, p2, R_MOD), R_MOD)
+                let b10 := addmod(c4, mulmod(c5, p2, R_MOD), R_MOD)
+                let b11 := addmod(c6, mulmod(c7, p2, R_MOD), R_MOD)
+                let b0 := addmod(b00, mulmod(b01, p1, R_MOD), R_MOD)
+                let b1 := addmod(b10, mulmod(b11, p1, R_MOD), R_MOD)
+                res := addmod(b0, mulmod(b1, p0, R_MOD), R_MOD)
+            }
+            case 4 {
+                let c0 := calldataload(coeffs.offset)
+                let c1 := calldataload(add(coeffs.offset, 0x20))
+                let c2 := calldataload(add(coeffs.offset, 0x40))
+                let c3 := calldataload(add(coeffs.offset, 0x60))
+                let c4 := calldataload(add(coeffs.offset, 0x80))
+                let c5 := calldataload(add(coeffs.offset, 0xa0))
+                let c6 := calldataload(add(coeffs.offset, 0xc0))
+                let c7 := calldataload(add(coeffs.offset, 0xe0))
+                let c8 := calldataload(add(coeffs.offset, 0x100))
+                let c9 := calldataload(add(coeffs.offset, 0x120))
+                let c10 := calldataload(add(coeffs.offset, 0x140))
+                let c11 := calldataload(add(coeffs.offset, 0x160))
+                let c12 := calldataload(add(coeffs.offset, 0x180))
+                let c13 := calldataload(add(coeffs.offset, 0x1a0))
+                let c14 := calldataload(add(coeffs.offset, 0x1c0))
+                let c15 := calldataload(add(coeffs.offset, 0x1e0))
+                let p0 := calldataload(point.offset)
+                let p1 := calldataload(add(point.offset, 0x20))
+                let p2 := calldataload(add(point.offset, 0x40))
+                let p3 := calldataload(add(point.offset, 0x60))
+
+                let b00 :=
+                    addmod(
+                        addmod(c0, mulmod(c1, p3, R_MOD), R_MOD),
+                        mulmod(addmod(c2, mulmod(c3, p3, R_MOD), R_MOD), p2, R_MOD),
+                        R_MOD
+                    )
+
+                let b01 :=
+                    addmod(
+                        addmod(c4, mulmod(c5, p3, R_MOD), R_MOD),
+                        mulmod(addmod(c6, mulmod(c7, p3, R_MOD), R_MOD), p2, R_MOD),
+                        R_MOD
+                    )
+
+                let b10 :=
+                    addmod(
+                        addmod(c8, mulmod(c9, p3, R_MOD), R_MOD),
+                        mulmod(addmod(c10, mulmod(c11, p3, R_MOD), R_MOD), p2, R_MOD),
+                        R_MOD
+                    )
+
+                let b11 :=
+                    addmod(
+                        addmod(c12, mulmod(c13, p3, R_MOD), R_MOD),
+                        mulmod(addmod(c14, mulmod(c15, p3, R_MOD), R_MOD), p2, R_MOD),
+                        R_MOD
+                    )
+
+                let b0 := addmod(b00, mulmod(b01, p1, R_MOD), R_MOD)
+                let b1 := addmod(b10, mulmod(b11, p1, R_MOD), R_MOD)
+                res := addmod(b0, mulmod(b1, p0, R_MOD), R_MOD)
+            }
+            default {
+                // TODO not supported for now
+                revert(0, 0)
+            }
+        }
+    }
+
+    function evalMultivariate(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
+        external
+        pure
+        returns (BN254.ScalarField)
+    {
+        return Coeffs._evalMultivariate(coeffs, point);
+    }
 }
 
-library Coeffs {
+library Univariate {
     // naive univariate polynomial evaluation
-    function _evaluateUnivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField point)
+    function _evaluateUnivariate(BN254.ScalarField[] calldata coeffs, BN254.ScalarField point)
         internal
         pure
         returns (BN254.ScalarField)
@@ -27,8 +140,8 @@ library Coeffs {
         return eval;
     }
 
-    function evaluateUnivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField point)
-        internal
+    function evaluateUnivariate(BN254.ScalarField[] calldata coeffs, BN254.ScalarField point)
+        external
         pure
         returns (BN254.ScalarField)
     {
@@ -38,65 +151,20 @@ library Coeffs {
             return _evaluateUnivariate(coeffs, point);
         }
     }
+}
 
-    // @notice interprets coeffs as coeffs of a univariate polynomial
-    // and returns the evaluation of this univariate polynomial at each of those points
-    function evaluateAtUnivariate(CoefficientList memory coeffs, BN254.ScalarField[] memory points)
-        external
-        pure
-        returns (BN254.ScalarField[] memory)
-    {
-        BN254.ScalarField[] memory evaluations = new BN254.ScalarField[](points.length);
-        for (uint256 i = 0; i < points.length; i++) {
-            evaluations[i] = evaluateUnivariate(coeffs.coeffs, points[i]);
-        }
-        return evaluations;
-    }
-
-    // @notice Initiates a new coefficient list struct
-    function newCoefficientList(BN254.ScalarField[] memory coeffs) external pure returns (CoefficientList memory) {
-        uint256 nVariables = Math.log2(coeffs.length);
-        return CoefficientList(coeffs, nVariables);
-    }
-
-    // @notice Utility function for getting a particular chunk from an array
-    function getChunk(BN254.ScalarField[] memory array, uint256 start, uint256 end)
+library Coeffs {
+    function eval1Bytes32(bytes32[] calldata coeffs, BN254.ScalarField[] calldata point)
         internal
         pure
-        returns (BN254.ScalarField[] memory)
+        returns (BN254.ScalarField)
     {
-        require(end > start && end <= array.length, "Invalid start or end index");
-        BN254.ScalarField[] memory chunk = new BN254.ScalarField[](end - start);
-        for (uint256 i = start; i < end; i++) {
-            chunk[i - start] = array[i];
-        }
-        return chunk;
+        return BN254.add(
+            BN254.ScalarField.wrap(uint256(coeffs[0])), BN254.mul(BN254.ScalarField.wrap(uint256(coeffs[1])), point[0])
+        );
     }
 
-    // @notice computes folding
-    function fold(CoefficientList memory coeffs, MultilinearPoint memory foldingRandomness)
-        external
-        returns (CoefficientList memory)
-    {
-        uint256 chunkSize = 1 << foldingRandomness.point.length;
-        uint256 nChunks = coeffs.coeffs.length / chunkSize;
-        BN254.ScalarField[] memory newCoeffs = new BN254.ScalarField[](nChunks);
-        for (uint256 chunkIdx = 0; chunkIdx < nChunks; chunkIdx++) {
-            uint256 start = chunkIdx * chunkSize;
-            uint256 end = chunkSize * (chunkIdx + 1);
-            BN254.ScalarField[] memory coeffChunk = getChunk(coeffs.coeffs, start, end);
-            BN254.ScalarField coeff = evalMultivariate(coeffChunk, foldingRandomness.point);
-            newCoeffs[chunkIdx] = coeff;
-        }
-        return CoefficientList({coeffs: newCoeffs, numVariables: coeffs.numVariables - foldingRandomness.point.length});
-    }
-
-    // @notice eval functions are internal, they are used only in the context of the evaluation of a multivariate polynomial
-    function eval0(BN254.ScalarField[] memory coeffs) internal pure returns (BN254.ScalarField) {
-        return coeffs[0];
-    }
-
-    function eval1(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
+    function eval1(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
         internal
         pure
         returns (BN254.ScalarField)
@@ -104,7 +172,7 @@ library Coeffs {
         return BN254.add(coeffs[0], BN254.mul(coeffs[1], point[0]));
     }
 
-    function eval2(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
+    function eval2(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
         internal
         pure
         returns (BN254.ScalarField)
@@ -114,7 +182,7 @@ library Coeffs {
         return BN254.add(b0, BN254.mul(b1, point[0]));
     }
 
-    function eval3(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
+    function eval3(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
         internal
         pure
         returns (BN254.ScalarField)
@@ -128,7 +196,7 @@ library Coeffs {
         return BN254.add(b0, BN254.mul(b1, point[0]));
     }
 
-    function eval4(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
+    function eval4(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
         internal
         pure
         returns (BN254.ScalarField)
@@ -154,14 +222,15 @@ library Coeffs {
         return BN254.add(b0, BN254.mul(b1, point[0]));
     }
 
-    // @notice Follows the implementation from https://github.com/WizardOfMenlo/whir/blob/cb3de2c886804b0cac022738479b931916bd57c1/src/poly_utils/coeffs.rs#L123
+    // @dev Follows the implementation from https://github.com/WizardOfMenlo/whir/blob/cb3de2c886804b0cac022738479b931916bd57c1/src/poly_utils/coeffs.rs#L123
     // We slightly depart from the corresponding signature, mainly for avoiding passing down the `CoefficientList` struct
-    function evalMultivariate(BN254.ScalarField[] memory coeffs, BN254.ScalarField[] memory point)
-        public
+    function _evalMultivariate(BN254.ScalarField[] calldata coeffs, BN254.ScalarField[] calldata point)
+        internal
+        pure
         returns (BN254.ScalarField)
     {
         if (point.length == 0) {
-            return eval0(coeffs);
+            return coeffs[0];
         } else if (point.length == 1) {
             return eval1(coeffs, point);
         } else if (point.length == 2) {
@@ -183,8 +252,8 @@ library Coeffs {
                 b0t[i] = coeffs[i];
                 b1t[i] = coeffs[i + coeffsSplit];
             }
-            BN254.ScalarField b0tEval = evalMultivariate(b0t, tailPoint);
-            BN254.ScalarField b1tEval = evalMultivariate(b1t, tailPoint);
+            BN254.ScalarField b0tEval = Multivariate.evalMultivariate(b0t, tailPoint);
+            BN254.ScalarField b1tEval = Multivariate.evalMultivariate(b1t, tailPoint);
             return BN254.add(b0tEval, BN254.mul(b1tEval, point[0]));
         }
     }

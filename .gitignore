@@ -7,8 +7,14 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
+# Ignores snapshots
+snapshots/
+
 # Docs
 docs/
 
 # Dotenv file
 .env
+
+# Benchmark proof data
+*.tar.gz
