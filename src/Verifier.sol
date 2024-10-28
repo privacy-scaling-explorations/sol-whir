@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {MultilinearPoint, PolyUtils} from "./poly_utils/PolyUtils.sol";
 import {SumcheckRound} from "./sumcheck/Proof.sol";
 import {BN254} from "solidity-bn254/BN254.sol";
-import {CoefficientList} from "./poly_utils/Coeffs.sol";
+import {CoefficientList, Coeffs} from "./poly_utils/Coeffs.sol";
 import {Arthur, EVMFs} from "../src/fs/FiatShamir.sol";
 import {Utils} from "./utils/Utils.sol";
 import {console} from "forge-std/Test.sol";
@@ -12,6 +12,7 @@ import {WhirBaseTest} from "../test/WhirBaseTest.t.sol";
 import {SumcheckPolynomial, SumcheckRound} from "./sumcheck/Proof.sol";
 import {LibSort} from "solady/src/utils/LibSort.sol";
 import {MerkleVerifier} from "./merkle/MerkleVerifier.sol";
+import {Logging} from "./utils/Logging.sol";
 
 struct ParsedRound {
     MultilinearPoint foldingRandomness;
@@ -38,9 +39,9 @@ struct ParsedProof {
     uint256[] finalRandomnessIndexes;
     BN254.ScalarField[] finalRandomnessPoints;
     BN254.ScalarField[][] finalRandomnessAnswers;
-    MultilinearPoint[] finalFoldingRandomness;
+    MultilinearPoint finalFoldingRandomness;
     SumcheckRound[] finalSumcheckRounds;
-    MultilinearPoint[] finalSumcheckRandomness;
+    MultilinearPoint finalSumcheckRandomness;
     CoefficientList finalCoefficients;
 }
 
@@ -77,8 +78,8 @@ struct WhirConfig {
     uint256 finalFoldingPowBits;
     uint256 finalLogInvRate;
     uint256 finalPowBits;
-    uint256 finalQueries;
-    uint256 finalSumcheckRound;
+    uint32 finalQueries;
+    uint128 finalSumcheckRounds;
     uint256 foldingFactor;
     uint256 maxPow;
     uint256 numVariables;
@@ -93,9 +94,6 @@ library VerifierUtils {
     function computeFoldsHelped(ParsedRound[] memory parsedRounds, BN254.ScalarField[][] memory finalRandomnessAnswers)
         external
     {}
-
-    /// @notice line 172 in verifier.rs
-    function foldedDomainSize(uint256 foldingFactor) external returns (uint256) {}
 
     function parseCommitment(WhirConfig calldata config, Arthur memory arthur)
         external
@@ -113,27 +111,29 @@ library VerifierUtils {
         return (arthur, ParsedCommitment(Utils.bytesToBytes32(root, 0), oodPoints, oodAnswers));
     }
 
-    function getSumcheckRounds(Arthur memory arthur, WhirConfig memory config)
+    function getSumcheckRounds(Arthur memory arthur, uint256 nRounds)
         private
         pure
-        returns (Arthur memory, SumcheckRound[] memory, MultilinearPoint memory)
+        returns (Arthur memory, SumcheckRound[] memory, BN254.ScalarField[] memory)
     {
         // initial sumcheck
         BN254.ScalarField[] memory sumcheckPolyEvals;
         BN254.ScalarField[] memory foldingRandomnessSingle;
-        BN254.ScalarField[] memory foldingRandomnessPoint = new BN254.ScalarField[](config.foldingFactor);
+        BN254.ScalarField[] memory foldingRandomnessPoint = new BN254.ScalarField[](nRounds);
 
         // sumcheckRounds
-        SumcheckRound[] memory sumcheckRounds = new SumcheckRound[](config.foldingFactor);
-        for (uint256 i = 0; i < config.foldingFactor; i++) {
+        SumcheckRound[] memory sumcheckRounds = new SumcheckRound[](nRounds);
+        for (uint256 i = 0; i < nRounds; i++) {
             (arthur, sumcheckPolyEvals) = EVMFs.nextScalars(arthur, 3);
             (arthur, foldingRandomnessSingle) = EVMFs.squeezeScalars(arthur, 1);
             sumcheckRounds[i] = SumcheckRound(SumcheckPolynomial(1, sumcheckPolyEvals), foldingRandomnessSingle[0]);
+
             // TODO: POW check
-            foldingRandomnessPoint[config.foldingFactor - 1 - i] = foldingRandomnessSingle[0];
+            // [..]
+
+            foldingRandomnessPoint[nRounds - 1 - i] = foldingRandomnessSingle[0];
         }
-        MultilinearPoint memory foldingRandomness = PolyUtils.newMultilinearPoint(foldingRandomnessPoint);
-        return (arthur, sumcheckRounds, foldingRandomness);
+        return (arthur, sumcheckRounds, foldingRandomnessPoint);
     }
 
     function getInitialCombinationRandomness(
@@ -151,14 +151,13 @@ library VerifierUtils {
         );
     }
 
-    function getStirChallengeIndexes(
-        Arthur memory arthur,
-        RoundParameters memory roundParameters,
-        uint256 domainSize,
-        uint256 foldingFactor
-    ) private pure returns (Arthur memory, uint256[] memory) {
+    function getStirChallengeIndexes(Arthur memory arthur, uint32 numQueries, uint256 domainSize, uint256 foldingFactor)
+        private
+        pure
+        returns (Arthur memory, uint256[] memory)
+    {
         BN254.ScalarField[] memory stirGen;
-        (arthur, stirGen) = EVMFs.squeezeScalars(arthur, roundParameters.numQueries);
+        (arthur, stirGen) = EVMFs.squeezeScalars(arthur, numQueries);
         uint256[] memory stirChallengeIndexes = Utils.rangedArray(stirGen, domainSize / (1 << foldingFactor));
         LibSort.sort(stirChallengeIndexes);
         LibSort.uniquifySorted(stirChallengeIndexes);
@@ -178,37 +177,198 @@ library VerifierUtils {
         return stirChallengePoints;
     }
 
+    function getOodPointsAndAnswers(Arthur memory arthur, WhirConfig memory config, uint256 round)
+        private
+        pure
+        returns (Arthur memory, BN254.ScalarField[] memory, BN254.ScalarField[] memory)
+    {
+        BN254.ScalarField[] memory oodPoints = new BN254.ScalarField[](config.roundParameters[round].oodSamples);
+        BN254.ScalarField[] memory oodAnswers = new BN254.ScalarField[](config.roundParameters[round].oodSamples);
+        if (config.roundParameters[round].oodSamples > 0) {
+            (arthur, oodPoints) = EVMFs.squeezeScalars(arthur, config.roundParameters[round].oodSamples);
+            (arthur, oodAnswers) = EVMFs.nextScalars(arthur, config.roundParameters[round].oodSamples);
+        }
+        return (arthur, oodPoints, oodAnswers);
+    }
+
+    function verifyMerkleProofRound(WhirProof memory whirProof, bytes32 root, uint256 round)
+        private
+        pure
+        returns (bool)
+    {
+        return MerkleVerifier.verify(
+            whirProof.merkleProofs[round].proof,
+            root,
+            whirProof.answers[round],
+            whirProof.merkleProofs[round].proofFlags
+        );
+    }
+
+    function getCombinationRandomness(
+        Arthur memory arthur,
+        uint256[] memory stirChallengeIndexes,
+        WhirConfig memory config,
+        uint256 round
+    ) private pure returns (Arthur memory, BN254.ScalarField[] memory) {
+        BN254.ScalarField[] memory combinationRandomnessGen;
+        (arthur, combinationRandomnessGen) = EVMFs.squeezeScalars(arthur, 1);
+        BN254.ScalarField[] memory combinationRandomness = Utils.expandRandomness(
+            combinationRandomnessGen[0], stirChallengeIndexes.length + config.roundParameters[round].oodSamples
+        );
+
+        return (arthur, combinationRandomness);
+    }
+
+    function parseRounds(
+        Arthur memory arthur,
+        WhirConfig memory config,
+        WhirProof memory whirProof,
+        bytes32 curRoot,
+        MultilinearPoint memory curFoldingRandomness,
+        BN254.ScalarField curDomainGenInv,
+        uint256 curDomainSize,
+        BN254.ScalarField curExpDomainGen
+    )
+        private
+        pure
+        returns (
+            Arthur memory,
+            ParsedRound[] memory,
+            bytes32,
+            uint256,
+            BN254.ScalarField,
+            MultilinearPoint memory,
+            BN254.ScalarField
+        )
+    {
+        ParsedRound[] memory parsedRounds = new ParsedRound[](config.roundParameters.length);
+        SumcheckRound[] memory sumcheckRounds;
+        BN254.ScalarField[] memory foldingRandomnessPoint;
+
+        for (uint256 r = 0; r < config.roundParameters.length; r++) {
+            bytes memory newRoot;
+            (arthur, newRoot) = EVMFs.nextBytes(arthur, 32);
+            BN254.ScalarField[] memory oodPoints;
+            BN254.ScalarField[] memory oodAnswers;
+            (arthur, oodPoints, oodAnswers) = getOodPointsAndAnswers(arthur, config, r);
+
+            uint256[] memory stirChallengeIndexes;
+            (arthur, stirChallengeIndexes) = getStirChallengeIndexes(
+                arthur, config.roundParameters[r].numQueries, curDomainSize, config.foldingFactor
+            );
+            uint256[] memory stirChallengePointsUint = getStirChallengePoints(stirChallengeIndexes, curExpDomainGen);
+
+            // TODO: need to check that the leaf indexes are also correct
+            require(verifyMerkleProofRound(whirProof, curRoot, r) == true);
+
+            // TODO: pow check
+            // [..]
+
+            BN254.ScalarField[] memory combinationRandomness;
+            (arthur, combinationRandomness) = getCombinationRandomness(arthur, stirChallengeIndexes, config, r);
+
+            (arthur, sumcheckRounds, foldingRandomnessPoint) = getSumcheckRounds(arthur, config.foldingFactor);
+            MultilinearPoint memory newFoldingRandomness = PolyUtils.newMultilinearPoint(foldingRandomnessPoint);
+
+            BN254.ScalarField[] memory stirChallengePoints = Utils.arrayToScalarField(stirChallengePointsUint);
+            BN254.ScalarField[][] memory stirChallengesAnswers = Utils.arrayToScalarField2(whirProof.answers[r]);
+            parsedRounds[r] = ParsedRound(
+                curFoldingRandomness,
+                oodPoints,
+                oodAnswers,
+                stirChallengeIndexes,
+                stirChallengePoints,
+                stirChallengesAnswers,
+                combinationRandomness,
+                sumcheckRounds,
+                curDomainGenInv
+            );
+
+            curFoldingRandomness = newFoldingRandomness;
+            curRoot = Utils.bytesToBytes32(newRoot, 0);
+            curDomainGenInv = BN254.mul(curDomainGenInv, curDomainGenInv);
+            curDomainSize /= 2;
+            curExpDomainGen = BN254.mul(curExpDomainGen, curExpDomainGen);
+        }
+
+        return (arthur, parsedRounds, curRoot, curDomainSize, curDomainGenInv, curFoldingRandomness, curExpDomainGen);
+    }
+
     function parseProof(
         Arthur memory arthur,
         ParsedCommitment calldata parsedCommitment,
         Statement calldata statement,
         WhirConfig calldata config,
         WhirProof calldata whirProof
-    ) external pure {
+    ) external pure returns (ParsedProof memory) {
+        BN254.ScalarField expDomainGen;
+        uint256 domainSize;
+        BN254.ScalarField domainGenInv;
+
         bytes32 prevRoot = parsedCommitment.root;
         BN254.ScalarField[] memory initialCombinationRandomness;
         (arthur, initialCombinationRandomness) = getInitialCombinationRandomness(arthur, parsedCommitment, statement);
 
         // initial sumcheck
         SumcheckRound[] memory sumcheckRounds;
-        MultilinearPoint memory foldingRandomness;
-        (arthur, sumcheckRounds, foldingRandomness) = getSumcheckRounds(arthur, config);
+        BN254.ScalarField[] memory foldingRandomnessPoint;
+        (arthur, sumcheckRounds, foldingRandomnessPoint) = getSumcheckRounds(arthur, config.foldingFactor);
+        MultilinearPoint memory foldingRandomness = PolyUtils.newMultilinearPoint(foldingRandomnessPoint);
 
-        for (uint256 r = 0; r < config.roundParameters.length; r++) {
-            bytes memory newRoot;
-            (arthur, newRoot) = EVMFs.nextBytes(arthur, 32);
-            BN254.ScalarField[] memory oodPoints = new BN254.ScalarField[](config.roundParameters[r].oodSamples);
-            BN254.ScalarField[] memory oodAnswers = new BN254.ScalarField[](config.roundParameters[r].oodSamples);
-            if (config.roundParameters[r].oodSamples > 0) {
-                (arthur, oodPoints) = EVMFs.squeezeScalars(arthur, config.roundParameters[r].oodSamples);
-                (arthur, oodAnswers) = EVMFs.nextScalars(arthur, config.roundParameters[r].oodSamples);
-            }
+        ParsedRound[] memory parsedRounds;
+        (arthur, parsedRounds, prevRoot, domainSize, domainGenInv, foldingRandomness, expDomainGen) = parseRounds(
+            arthur,
+            config,
+            whirProof,
+            prevRoot,
+            foldingRandomness,
+            config.domainGenInv,
+            config.domainSize,
+            config.expDomainGen
+        );
 
-            //uint256[] memory stirChallengeIndexes;
-            //(arthur, stirChallengeIndexes) =
-            //    getStirChallengeIndexes(arthur, config.roundParameters[r], config.domainSize, config.foldingFactor);
-            //uint256[] memory stirChallengePoints = getStirChallengePoints(stirChallengeIndexes, config.expDomainGen);
-        }
+        BN254.ScalarField[] memory finalCoefficientsValues;
+        (arthur, finalCoefficientsValues) = EVMFs.nextScalars(arthur, uint128(1) << config.finalSumcheckRounds);
+        CoefficientList memory finalCoefficients = Coeffs.newCoefficientList(finalCoefficientsValues);
+
+        uint256[] memory finalRandomnessIndexes;
+        (arthur, finalRandomnessIndexes) =
+            getStirChallengeIndexes(arthur, config.finalQueries, domainSize, config.foldingFactor);
+
+        BN254.ScalarField[] memory finalRandomnessPoints =
+            Utils.arrayToScalarField(getStirChallengePoints(finalRandomnessIndexes, expDomainGen));
+
+        BN254.ScalarField[][] memory finalRandomnessAnswers =
+            Utils.arrayToScalarField2(whirProof.answers[whirProof.answers.length - 1]);
+
+        // TODO: need to check that the leaf indexes are also correct
+        // verify last merkle proof round
+        require(verifyMerkleProofRound(whirProof, prevRoot, whirProof.merkleProofs.length - 1) == true);
+
+        // TODO: pow check
+        // [..]
+
+        SumcheckRound[] memory finalSumcheckRounds;
+        BN254.ScalarField[] memory finalSumcheckRandomnessPoint;
+        (arthur, finalSumcheckRounds, finalSumcheckRandomnessPoint) =
+            getSumcheckRounds(arthur, config.finalSumcheckRounds);
+        MultilinearPoint memory finalSumcheckRandomness = PolyUtils.newMultilinearPoint(finalSumcheckRandomnessPoint);
+
+        ParsedProof memory parsed = ParsedProof(
+            initialCombinationRandomness,
+            sumcheckRounds,
+            parsedRounds,
+            domainGenInv,
+            finalRandomnessIndexes,
+            finalRandomnessPoints,
+            finalRandomnessAnswers,
+            foldingRandomness,
+            finalSumcheckRounds,
+            finalSumcheckRandomness,
+            finalCoefficients
+        );
+
+        return parsed;
     }
 }
 
