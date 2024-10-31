@@ -14,6 +14,10 @@ library Utils {
     BN254.ScalarField public constant BN254_MINUS_ONE =
         BN254.ScalarField.wrap(21888242871839275222246405745257275088548364400416034343698204186575808495616);
 
+    function requireEqualScalars(BN254.ScalarField a, BN254.ScalarField b) external pure {
+        require(BN254.ScalarField.unwrap(a) == BN254.ScalarField.unwrap(b));
+    }
+
     function arrayToScalarField(uint256[] memory values) public pure returns (BN254.ScalarField[] memory) {
         BN254.ScalarField[] memory scalars = new BN254.ScalarField[](values.length);
         for (uint256 i = 0; i < values.length; i++) {

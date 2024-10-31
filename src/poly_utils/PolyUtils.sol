@@ -11,6 +11,12 @@ struct MultilinearPoint {
 }
 
 library PolyUtils {
+    function newMultilinearPointFromScalar(BN254.ScalarField value) external pure returns (MultilinearPoint memory) {
+        BN254.ScalarField[] memory valuePoint = new BN254.ScalarField[](1);
+        valuePoint[0] = value;
+        return newMultilinearPoint(valuePoint);
+    }
+
     function newMultilinearPoint(BN254.ScalarField[] memory point) public pure returns (MultilinearPoint memory) {
         return MultilinearPoint(point);
     }
