@@ -1,0 +1,58 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f"
+      ],
+      [
+        "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117e"
+      ]
+    ],
+    "evaluations": [
+      "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c77890",
+      "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117f"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x24e17bcd948eb2e2ee93608c262673d35ff238bea8022ec693b227d19917b2b20ce5f56817599eb8ee9d39e155b289945a0adf9f97bc60021b9d8540a3159c011796fc0d1a106a09a98e23ca5a1bb31701359d44db3da12f5310fc051b5c9bef0bf618fb46509bf92aa8b7175d0e499f99c5534aa05008b5018f9b466b7ca63d0d81a53d65f235f83b9fff9d8a591bf6f1e30a59c8f0a7224f5dd357e0601eeb02cfede7987b11d4e6635e431c59e33838b2e6f5896755e545561862545f91e0"
+  },
+  "config": {
+    "numVariables": 1,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 1,
+    "startingLogInvRate": 1,
+    "domainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "expDomainGen": "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000",
+    "domainGenInv": "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cb",
+    "domainSize": 4,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [],
+    "finalQueries": 64,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}

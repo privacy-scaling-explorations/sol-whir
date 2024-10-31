@@ -1,0 +1,89 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000002",
+        "0x0000000000000000000000000000000000000000000000000000000000000002"
+      ],
+      [
+        "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703637",
+        "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703637"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      [
+        "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cc",
+        "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cc"
+      ]
+    ],
+    [
+      [
+        "0x2ec4c1fd99005ec7379a95dab72d3c2d9c12ae9dd31b7ae4a398472baee58a30",
+        "0x2ec4c1fd99005ec7379a95dab72d3c2d9c12ae9dd31b7ae4a398472baee58a30"
+      ],
+      [
+        "0x2ec4c1fd99005ec7379a95dab72d3c2d9c12ae9dd31b7ae4a398472baee58a30",
+        "0x2ec4c1fd99005ec7379a95dab72d3c2d9c12ae9dd31b7ae4a398472baee58a30"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f",
+        "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117e"
+      ]
+    ],
+    "evaluations": [
+      "0x16f4148b04f4c5350487da431dccee19f53db5bf8af3310aad47d6a4054469a0"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x18e771ab6120bbe0a49a94574dba84fca24f439073389136ed6b17cb652a8cbe1c0f8b2324beaba7ae5bf0effab7703fa8f41f971092aece3f44d454322ab19416c7ca75c60652022553f9a751e679584c057e6f180c86d43cbc9e2367262f87236371b76d516e50cf2419252ca3888e1f005ae3ebdc66ef1326a7e5c5f3934e25d2f5c4f5e154ebfd705e7990372da178f0955e7b6fa050833e1d471c682b551d1c9e98af621aa0baf6e0b73bc0f0bc04d8c238c400ddaf4362db8aca7fdc4325c7ec7aa867854159cb7e809aba01d9e4d062825a82a48d718682f4c7aec3091de0dcef22019608032d780b2d046f00d1dda5e2b73a60d4ba25db479848f2fb2ea680065800dd94f8b80d9dd67e923bd52568365b49b5c7873de7fdf116f36b01ec9ad2c0cc367d284f7b017aed1153e1a35eb272748e472366308f1a6a014f108e0dbd002e10e807de4837b13387ddb7c42672745d0c3ece90ffd3eb5fccdc"
+  },
+  "config": {
+    "numVariables": 2,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 1,
+    "startingLogInvRate": 1,
+    "domainGen": "0x2b337de1c8c14f22ec9b9e2f96afef3652627366f8170a0a948dad4ac1bd5e80",
+    "expDomainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "domainGenInv": "0x130b17119778465cfb3acaee30f81dee20710ead41671f568b11d9ab07b95a9b",
+    "domainSize": 8,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [
+      {
+        "powBits": 0,
+        "foldingPowBits": 0,
+        "numQueries": 64,
+        "oodSamples": 1,
+        "logInvRate": 1
+      }
+    ],
+    "finalQueries": 64,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}

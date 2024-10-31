@@ -1,0 +1,62 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f"
+      ],
+      [
+        "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117e"
+      ],
+      [
+        "0x2dcf45f84ea32723c456a183c827db2be4fbf1e26c526ffecb3dc598161280e5"
+      ]
+    ],
+    "evaluations": [
+      "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c77890",
+      "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117f",
+      "0x2dcf45f84ea32723c456a183c827db2be4fbf1e26c526ffecb3dc598161280e6"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x24e17bcd948eb2e2ee93608c262673d35ff238bea8022ec693b227d19917b2b20ce5f56817599eb8ee9d39e155b289945a0adf9f97bc60021b9d8540a3159c01304c282f8e0db0feecbc8102b5a03eb2a0e702ed05ec2f05c687858bd5d8d93c166c6dde6cbc4b59c8c79d161ee67bc1fc9eff5a6bd75a4af8b13dc41e2b3a9b13296df25e6f0f6404c1dfa73ed567e8638fc5d9253462f21e4113d0b8f7241f0568f53b523ca57c8a236b32beb4f9afd0ce76aea4fc2a1afcda205f0285afd0"
+  },
+  "config": {
+    "numVariables": 1,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 1,
+    "startingLogInvRate": 1,
+    "domainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "expDomainGen": "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000",
+    "domainGenInv": "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cb",
+    "domainSize": 4,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [],
+    "finalQueries": 64,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}

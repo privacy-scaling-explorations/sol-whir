@@ -1,0 +1,54 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f"
+      ]
+    ],
+    "evaluations": [
+      "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c77890"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x24e17bcd948eb2e2ee93608c262673d35ff238bea8022ec693b227d19917b2b22d743ce8f5e81518e8e3354c977d5921234eaec38dc3f0f6c6c24679d738877305e02313d69316219eda20d3d407fe7809ca7309d7eaff34fa3f5e34318ef11e1a709dd94595e3974ad593b93a23f91c2c0f05ac4ba17c6e661d27eadf033d042a5961c2695ece7bbb4279847672e17a4a12111e6165b7a136d7117eaa4229f8"
+  },
+  "config": {
+    "numVariables": 1,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 0,
+    "startingLogInvRate": 1,
+    "domainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "expDomainGen": "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000",
+    "domainGenInv": "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cb",
+    "domainSize": 4,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [],
+    "finalQueries": 78,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}

@@ -13,6 +13,7 @@ import {SumcheckPolynomial, SumcheckRound} from "./sumcheck/Proof.sol";
 import {LibSort} from "solady/src/utils/LibSort.sol";
 import {MerkleVerifier} from "./merkle/MerkleVerifier.sol";
 import {Logging} from "./utils/Logging.sol";
+import {Sumcheck} from "./sumcheck/Proof.sol";
 
 struct ParsedRound {
     MultilinearPoint foldingRandomness;
@@ -90,13 +91,36 @@ struct WhirConfig {
 }
 
 /// @notice Various utilities used by the whir verifier
-library VerifierUtils {
-    function computeFoldsHelped(ParsedRound[] memory parsedRounds, BN254.ScalarField[][] memory finalRandomnessAnswers)
-        external
-    {}
+library Verifier {
+    function computeFoldsHelped(
+        ParsedRound[] memory parsedRounds,
+        BN254.ScalarField[][] memory finalRandomnessAnswers,
+        MultilinearPoint memory finalFoldingRandomness
+    ) public returns (BN254.ScalarField[][] memory) {
+        BN254.ScalarField[][] memory result = new BN254.ScalarField[][](parsedRounds.length + 1);
+        for (uint256 i = 0; i < parsedRounds.length; i++) {
+            BN254.ScalarField[] memory evaluations =
+                new BN254.ScalarField[](parsedRounds[i].stirChallengesAnswers.length);
+            for (uint256 j = 0; j < parsedRounds[i].stirChallengesAnswers.length; j++) {
+                evaluations[j] = Coeffs.evalMultivariate(
+                    parsedRounds[i].stirChallengesAnswers[j], parsedRounds[i].foldingRandomness.point
+                );
+            }
+            result[i] = evaluations;
+        }
 
-    function parseCommitment(WhirConfig calldata config, Arthur memory arthur)
-        external
+        // final round
+        BN254.ScalarField[] memory finalEvaluations = new BN254.ScalarField[](finalRandomnessAnswers.length);
+        for (uint256 i = 0; i < finalRandomnessAnswers.length; i++) {
+            finalEvaluations[i] = Coeffs.evalMultivariate(finalRandomnessAnswers[i], finalFoldingRandomness.point);
+        }
+        result[parsedRounds.length] = finalEvaluations;
+
+        return result;
+    }
+
+    function parseCommitment(WhirConfig memory config, Arthur memory arthur)
+        public
         pure
         returns (Arthur memory, ParsedCommitment memory)
     {
@@ -296,11 +320,11 @@ library VerifierUtils {
 
     function parseProof(
         Arthur memory arthur,
-        ParsedCommitment calldata parsedCommitment,
-        Statement calldata statement,
-        WhirConfig calldata config,
-        WhirProof calldata whirProof
-    ) external pure returns (ParsedProof memory) {
+        ParsedCommitment memory parsedCommitment,
+        Statement memory statement,
+        WhirConfig memory config,
+        WhirProof memory whirProof
+    ) public pure returns (ParsedProof memory) {
         BN254.ScalarField expDomainGen;
         uint256 domainSize;
         BN254.ScalarField domainGenInv;
@@ -370,8 +394,244 @@ library VerifierUtils {
 
         return parsed;
     }
-}
 
-contract Verifier {
-    function verify(Statement memory statement) external pure returns (bool) {}
+    function verify(
+        WhirConfig memory config,
+        Statement memory statement,
+        WhirProof memory whirProof,
+        Arthur memory arthur
+    ) external returns (bool) {
+        ParsedCommitment memory parsedCommitment;
+        (arthur, parsedCommitment) = parseCommitment(config, arthur);
+        ParsedProof memory parsedProof = parseProof(arthur, parsedCommitment, statement, config, whirProof);
+        BN254.ScalarField[][] memory computedFolds = computeFoldsHelped(
+            parsedProof.rounds, parsedProof.finalRandomnessAnswers, parsedProof.finalFoldingRandomness
+        );
+
+        // check first sumcheck
+        (SumcheckPolynomial memory prevPoly, BN254.ScalarField randomness) = (
+            parsedProof.initialSumcheckRounds[0].polynomial,
+            parsedProof.initialSumcheckRounds[0].foldingRandomnessSingle
+        );
+
+        BN254.ScalarField expectedSum = Sumcheck.sumOverHyperCube(prevPoly);
+        BN254.ScalarField sum = BN254.ScalarField.wrap(0);
+        for (uint256 i = 0; i < parsedCommitment.oodAnswers.length; i++) {
+            sum = BN254.add(sum, BN254.mul(parsedCommitment.oodAnswers[i], parsedProof.initialCombinationRandomness[i]));
+        }
+        for (uint256 j = 0; j < statement.evaluations.length; j++) {
+            sum = BN254.add(
+                sum,
+                BN254.mul(
+                    statement.evaluations[j],
+                    parsedProof.initialCombinationRandomness[parsedCommitment.oodAnswers.length + j]
+                )
+            );
+        }
+        Utils.requireEqualScalars(expectedSum, sum);
+
+        // check remaining rounds
+        for (uint256 i = 1; i < parsedProof.initialSumcheckRounds.length; i++) {
+            (SumcheckPolynomial memory sumcheckPoly, BN254.ScalarField newRandomness) = (
+                parsedProof.initialSumcheckRounds[i].polynomial,
+                parsedProof.initialSumcheckRounds[i].foldingRandomnessSingle
+            );
+            expectedSum = Sumcheck.sumOverHyperCube(sumcheckPoly);
+            BN254.ScalarField eval =
+                Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness));
+            Utils.requireEqualScalars(expectedSum, eval);
+
+            randomness = newRandomness;
+            prevPoly = sumcheckPoly;
+        }
+
+        for (uint256 i = 0; i < parsedProof.rounds.length; i++) {
+            ParsedRound memory round = parsedProof.rounds[i];
+            BN254.ScalarField[] memory folds = computedFolds[i];
+            (SumcheckPolynomial memory sumcheckPoly, BN254.ScalarField newRandomness) =
+                (round.sumcheckRounds[0].polynomial, round.sumcheckRounds[0].foldingRandomnessSingle);
+            BN254.ScalarField claimedSum = BN254.ScalarField.wrap(0);
+            BN254.ScalarField eval =
+                Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness));
+            claimedSum = BN254.add(claimedSum, eval);
+            BN254.ScalarField valuesSum = BN254.ScalarField.wrap(0);
+
+            for (uint256 j = 0; j < round.oodAnswers.length; j++) {
+                valuesSum = BN254.add(valuesSum, BN254.mul(round.oodAnswers[j], round.combinationRandomness[j]));
+            }
+
+            for (uint256 j = 0; j < folds.length; j++) {
+                valuesSum =
+                    BN254.add(valuesSum, BN254.mul(folds[j], round.combinationRandomness[j + round.oodAnswers.length]));
+            }
+
+            claimedSum = BN254.add(valuesSum, claimedSum);
+            Utils.requireEqualScalars(Sumcheck.sumOverHyperCube(sumcheckPoly), claimedSum);
+
+            prevPoly = sumcheckPoly;
+            randomness = newRandomness;
+
+            // check rest of the round
+            for (uint256 j = 1; j < round.sumcheckRounds.length; j++) {
+                (SumcheckPolynomial memory sumcheckPoly, BN254.ScalarField newRandomness) =
+                    (round.sumcheckRounds[j].polynomial, round.sumcheckRounds[j].foldingRandomnessSingle);
+
+                Utils.requireEqualScalars(
+                    Sumcheck.sumOverHyperCube(sumcheckPoly),
+                    Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness))
+                );
+                prevPoly = sumcheckPoly;
+                randomness = newRandomness;
+            }
+        }
+
+        // check the foldings computed from the proof match evaluations of the polynomial
+        BN254.ScalarField[] memory finalFolds = computedFolds[computedFolds.length - 1];
+        BN254.ScalarField[] memory finalEvaluations =
+            Coeffs.evaluateAtUnivariate(parsedProof.finalCoefficients, parsedProof.finalRandomnessPoints);
+        for (uint256 j = 0; j < finalFolds.length; j++) {
+            Utils.requireEqualScalars(finalFolds[j], finalEvaluations[j]);
+        }
+
+        if (config.finalSumcheckRounds > 0) {
+            (SumcheckPolynomial memory sumcheckPoly, BN254.ScalarField newRandomness) = (
+                parsedProof.finalSumcheckRounds[0].polynomial,
+                parsedProof.finalSumcheckRounds[0].foldingRandomnessSingle
+            );
+
+            Utils.requireEqualScalars(
+                Sumcheck.sumOverHyperCube(sumcheckPoly),
+                Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness))
+            );
+
+            prevPoly = sumcheckPoly;
+            randomness = newRandomness;
+
+            // check remaining rounds
+            for (uint256 j = 1; j < parsedProof.finalSumcheckRounds.length; j++) {
+                (SumcheckPolynomial memory sumcheckPoly, BN254.ScalarField newRandomness) = (
+                    parsedProof.finalSumcheckRounds[j].polynomial,
+                    parsedProof.finalSumcheckRounds[j].foldingRandomnessSingle
+                );
+
+                Utils.requireEqualScalars(
+                    Sumcheck.sumOverHyperCube(sumcheckPoly),
+                    Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness))
+                );
+
+                prevPoly = sumcheckPoly;
+                randomness = newRandomness;
+            }
+        }
+
+        BN254.ScalarField evaluationOfvPoly = computeVPoly(config, parsedProof, parsedCommitment, statement);
+
+        Utils.requireEqualScalars(
+            Sumcheck.evaluateAtPoint(prevPoly, PolyUtils.newMultilinearPointFromScalar(randomness)),
+            BN254.mul(
+                evaluationOfvPoly,
+                Coeffs.evalMultivariate(parsedProof.finalCoefficients.coeffs, parsedProof.finalSumcheckRandomness.point)
+            )
+        );
+
+        return true;
+    }
+
+    function computeVPoly(
+        WhirConfig memory whirConfig,
+        ParsedProof memory parsedProof,
+        ParsedCommitment memory parsedCommitment,
+        Statement memory statement
+    ) public pure returns (BN254.ScalarField) {
+        // TODO clean this up. think about how to implement equivalent of rust chain();
+
+        uint256 numVariables = whirConfig.numVariables;
+
+        // compute size required to build the multilinear point
+        // The size of the point also requires to know the size of each folding randomness point
+        uint256 foldingRandomnessLength =
+            parsedProof.finalSumcheckRandomness.point.length + parsedProof.finalFoldingRandomness.point.length;
+        for (uint256 i = 0; i < parsedProof.rounds.length; i++) {
+            ParsedRound memory round = parsedProof.rounds[i];
+            for (uint256 j = 0; j < round.foldingRandomness.point.length; j++) {
+                foldingRandomnessLength += 1;
+            }
+        }
+
+        BN254.ScalarField[] memory foldingRandomnessValues = new BN254.ScalarField[](foldingRandomnessLength);
+        uint256 idx;
+        for (uint256 i = 0; i < parsedProof.finalSumcheckRandomness.point.length; i++) {
+            foldingRandomnessValues[idx] = parsedProof.finalSumcheckRandomness.point[i];
+            idx += 1;
+        }
+
+        for (uint256 i = 0; i < parsedProof.finalFoldingRandomness.point.length; i++) {
+            foldingRandomnessValues[idx] = parsedProof.finalFoldingRandomness.point[i];
+            idx += 1;
+        }
+
+        for (uint256 i = 0; i < parsedProof.rounds.length; i++) {
+            ParsedRound memory round = parsedProof.rounds[parsedProof.rounds.length - 1 - i];
+            for (uint256 j = 0; j < round.foldingRandomness.point.length; j++) {
+                foldingRandomnessValues[idx] = round.foldingRandomness.point[j];
+                idx += 1;
+            }
+        }
+
+        MultilinearPoint memory foldingRandomness = PolyUtils.newMultilinearPoint(foldingRandomnessValues);
+
+        // compute value
+        MultilinearPoint[] memory multilinearPoints =
+            new MultilinearPoint[](parsedCommitment.oodPoints.length + statement.points.length);
+        for (uint256 i = 0; i < parsedCommitment.oodPoints.length; i++) {
+            multilinearPoints[i] = PolyUtils.expandFromUnivariate(parsedCommitment.oodPoints[i], numVariables);
+        }
+
+        for (uint256 i = 0; i < statement.points.length; i++) {
+            multilinearPoints[parsedCommitment.oodPoints.length + i] = statement.points[i];
+        }
+
+        BN254.ScalarField value = BN254.ScalarField.wrap(0);
+        for (uint256 i = 0; i < multilinearPoints.length; i++) {
+            value = BN254.add(
+                value,
+                BN254.mul(
+                    parsedProof.initialCombinationRandomness[i],
+                    PolyUtils.eqPolyOutside(multilinearPoints[i], foldingRandomness)
+                )
+            );
+        }
+
+        // go through round proofs
+        for (uint256 i = 0; i < parsedProof.rounds.length; i++) {
+            ParsedRound memory roundProof = parsedProof.rounds[i];
+            numVariables -= whirConfig.foldingFactor;
+
+            // compute new folding randomness
+            BN254.ScalarField[] memory newFoldingRandomnessValues = new BN254.ScalarField[](numVariables);
+            for (uint256 j = 0; j < numVariables; j++) {
+                newFoldingRandomnessValues[j] = foldingRandomness.point[j];
+            }
+            foldingRandomness = MultilinearPoint(newFoldingRandomnessValues);
+
+            MultilinearPoint[] memory stirChallenges =
+                new MultilinearPoint[](roundProof.oodPoints.length + roundProof.stirChallengePoints.length);
+            for (uint256 j = 0; j < roundProof.oodPoints.length; j++) {
+                stirChallenges[j] = PolyUtils.expandFromUnivariate(roundProof.oodPoints[j], numVariables);
+            }
+            for (uint256 j = 0; j < roundProof.stirChallengePoints.length; j++) {
+                stirChallenges[j + roundProof.oodPoints.length] =
+                    PolyUtils.expandFromUnivariate(roundProof.stirChallengePoints[j], numVariables);
+            }
+
+            BN254.ScalarField sumOfClaims = BN254.ScalarField.wrap(0);
+            for (uint256 j = 0; j < stirChallenges.length; j++) {
+                BN254.ScalarField point = PolyUtils.eqPolyOutside(foldingRandomness, stirChallenges[j]);
+                sumOfClaims = BN254.add(sumOfClaims, BN254.mul(point, roundProof.combinationRandomness[j]));
+            }
+
+            value = BN254.add(value, sumOfClaims);
+        }
+        return value;
+    }
 }

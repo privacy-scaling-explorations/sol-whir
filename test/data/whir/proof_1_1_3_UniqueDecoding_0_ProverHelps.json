@@ -1,0 +1,62 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f"
+      ],
+      [
+        "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117e"
+      ],
+      [
+        "0x2dcf45f84ea32723c456a183c827db2be4fbf1e26c526ffecb3dc598161280e5"
+      ]
+    ],
+    "evaluations": [
+      "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c77890",
+      "0x0d004a3ec16148a06e4327024d35da4596668851b471e9e85623ab712940117f",
+      "0x2dcf45f84ea32723c456a183c827db2be4fbf1e26c526ffecb3dc598161280e6"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x24e17bcd948eb2e2ee93608c262673d35ff238bea8022ec693b227d19917b2b2122c1f4e09ee5d07432aeeabd692ad8f9e14243a29ef4df8ccfd6973cca3663d0289de6db5fcfc173580502656c8300d5328f9b83ac1503f8783086694e9e5bf017d8bd1e55d7d598f506a260221dfd6477268c2ac2f77657372d26c48d37e871df2098119cb18f58751b2aedf09410024e334c5cc75bd6a2814126acc936c8c"
+  },
+  "config": {
+    "numVariables": 1,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 0,
+    "startingLogInvRate": 1,
+    "domainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "expDomainGen": "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000",
+    "domainGenInv": "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cb",
+    "domainSize": 4,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [],
+    "finalQueries": 78,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "merkleProofs": [
+    {
+      "proof": [],
+      "proofFlags": [
+        true
+      ]
+    }
+  ],
+  "answers": [
+    [
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]
+    ]
+  ],
+  "statement": {
+    "points": [
+      [
+        "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c7788f"
+      ]
+    ],
+    "evaluations": [
+      "0x02f01189eb498b10cf6d1069ea03ff3c04e53984ebf57f9a7d1faf1a18c77890"
+    ]
+  },
+  "arthur": {
+    "transcript": "0x24e17bcd948eb2e2ee93608c262673d35ff238bea8022ec693b227d19917b2b20ce5f56817599eb8ee9d39e155b289945a0adf9f97bc60021b9d8540a3159c010f97e4edbbf633c9be26c499561735b43bc6a8969056e0ade2a89b0a85d8f544300193c5892036dfa075f135b51d4c0e98306136559f1803098951cbb0485bd100746fa1a51ac8ee364cfa681a0f9254c4d5594e5c65c4dcecde391b9f4e33a506a696cd9d27489728a848273e4ae6acf5b4527fed3041b4fc0d045d981a029d"
+  },
+  "config": {
+    "numVariables": 1,
+    "securityLevel": 32,
+    "maxPow": 0,
+    "commitmentOodSamples": 1,
+    "startingLogInvRate": 1,
+    "domainGen": "0x30644e72e131a029048b6e193fd841045cea24f6fd736bec231204708f703636",
+    "expDomainGen": "0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000000",
+    "domainGenInv": "0x0000000000000000b3c4d79d41a91758cb49c3517c4604a520cff123608fc9cb",
+    "domainSize": 4,
+    "startingFoldingPowBits": 0,
+    "foldingFactor": 1,
+    "roundParameters": [],
+    "finalQueries": 64,
+    "finalPowBits": 0,
+    "finalLogInvRate": 1,
+    "finalSumcheckRound": 0,
+    "finalFoldingPowBits": 0
+  }
+}
