@@ -67,6 +67,48 @@ contract VerifierTest is WhirBaseTest {
         vm.writeLine(path, line);
     }
 
+    function test_benchVerifySingle() external {
+        string memory projectRoot = vm.projectRoot();
+        string memory benchPath = string.concat(projectRoot, "/test/data/bench/bench.csv");
+        vm.exists(benchPath) ? resetBench(benchPath) : true;
+        vm.writeLine(benchPath, "numVariables,foldingFactor,numPoints,soundnessType,powBits,foldType,gasUsed");
+               string memory proofPath = string.concat(
+                    projectRoot,
+                    "/test/data/whir/",
+                    getFileName(
+                        20,
+                        4,
+                        1,
+                        "ConjectureList",
+                        0,
+                        "ProverHelps"
+                    )
+                );
+
+                string memory proofJson = vm.readFile(proofPath);
+                bytes memory parsed = vm.parseJson(proofJson);
+                JSONWhirProof memory jsonProof = abi.decode(parsed, (JSONWhirProof));
+
+                WhirConfig memory config = JSONUtils.jsonWhirConfigToWhirConfig(jsonProof.config);
+                Statement memory statement = JSONUtils.jsonStatementToStatement(jsonProof.statement);
+                WhirProof memory whirProof = JSONUtils.jsonWhirProofToWhirProof(jsonProof);
+                Arthur memory arthur = EVMFs.newArthur();
+                arthur.transcript = jsonProof.arthur.transcript;
+                vm.startSnapshotGas("verifSnapshot");
+                bool res = Verifier.verify(config, statement, whirProof, arthur);
+                uint256 gasUsed = vm.stopSnapshotGas("verifSnapshot");
+                assertTrue(res, "Could not verify proof");
+                writeLine(
+                    20,
+                    4,
+                    1,
+                    "ConjectureList",
+                    0,
+                    gasUsed,
+                    benchPath
+                );
+    }
+
     function test_benchVerify() external {
         string[3] memory soundnessTypes = ["ConjectureList", "ProvableList", "UniqueDecoding"];
         uint256[1] memory powBits = [uint256(0)];
